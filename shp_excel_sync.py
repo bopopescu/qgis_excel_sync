@@ -16,15 +16,15 @@ def layer_from_name(layerName):
 # configurable
 logTag="OpenGIS" # in which tab log messages appear
 # excel layer
-excelName="Beispiel"# the layer name
-excelSheetName="Beispiel"
-excelFkIdx = 0
-excelCentroidIdx = 14
+excelName="Excel"# the layer name
+excelSheetName="Tabelle1"
+excelFkIdx = 1
+excelCentroidIdx = 70
 excelAreaIdx = 8
 excelPath=layer_from_name(excelName).publicSource()
 excelKeyName = [f for f in layer_from_name(excelName).getFeatures()][0].fields().at(excelFkIdx).name()
 # shpfile layer
-shpName="Beispiel_Massnahmepool"
+shpName="Massnahmepool"
 shpKeyName="ef_key"
 
 # non configurable - no edits beyond this point
@@ -80,7 +80,7 @@ def error(msg):
     QgsMessageLog.logMessage(str(msg), logTag, QgsMessageLog.CRITICAL)
 
 def excel_changed():
-    info("Excel changed in disk - need to sync")
+    info("Excel changed on disk - need to sync")
     reload_excel()
     update_shp_from_excel()
 
@@ -108,12 +108,12 @@ def changed_geom(layerId, geoms):
 
 
 def write_feature_to_excel(sheet, idx, feat):
-   area = str(feat.geometry().area())
+   area = str(feat.geometry().area()*0.0001) # Square meters to hectare
    centroid = str(feat.geometry().centroid().asPoint())
    for i in range(feat.fields().count()):
        
        fname = feat.fields().at(i).name()
-       info("writing field"+fname)
+       info("writing field "+fname)
        val = feat.attribute(fname)
        if val is None:
            val=''
@@ -185,15 +185,15 @@ def update_excel_from_shp():
 def updateShpLayer(fksToRemove):
     layer = layer_from_name(shpName)
     feats = [f for f in layer.getFeatures()]
-    layer.startEditing()
-    for f in feats:
-         if f.attribute(shpKeyName) in fksToRemove:
-             layer.deleteFeature(f.id())
-    layer.commitChanges()
+# MK, 3.1.2015: Not sure this should be done without user confirmation.
+#    layer.startEditing()
+#    for f in feats:
+#         if f.attribute(shpKeyName) in fksToRemove:
+#             layer.deleteFeature(f.id())
+#    layer.commitChanges()
      
 
 def update_shp_from_excel():
-   
     excelFks = Set(get_fk_set(excelName, excelKeyName,skipFirst=skipFirstLineExcel))
     if not excelFks:
         warn("Qgis thinks that the Excel file is empty. That probably means something went horribly wrong. Won't sync.")
@@ -208,16 +208,16 @@ def update_shp_from_excel():
     inShpButNotInExcel = shpFks - excelFks
     inExcelButNotInShp = excelFks - shpFks
     if inExcelButNotInShp:
-         warn("There are rows in the excel file with no matching geometry {}. Can't update shapefile from those.".format(inExcelButNotInShp))
+         warn("There are rows in the excel file with no matching geometry {}.".format(inExcelButNotInShp))
     if inShpButNotInExcel:
         info("Will remove features "+str(inShpButNotInExcel)+"from shapefile because they have been removed from excel")
         updateShpLayer(inShpButNotInExcel)
 
-def init(filename):
+def init():
     info("Initial Syncing excel to shp")
     update_shp_from_excel()
     global filewatcher # otherwise the object is lost
-    filewatcher = QFileSystemWatcher([filename])
+    filewatcher = QFileSystemWatcher([excelPath])
     filewatcher.fileChanged.connect(excel_changed)
     shpLayer = layer_from_name(shpName)
     shpLayer.committedFeaturesAdded.connect(added_geom)
