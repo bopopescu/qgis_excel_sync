@@ -127,6 +127,14 @@ def added_geom(layerId, feats):
     shpAdd = feats
 
 
+
+def query_layer_for_fids(layerName, fids):
+    layer = layer_from_name(layerName)
+    freq = QgsFeatureRequest()
+    freq.setFilterFids(fids)
+    return list(layer.getFeatures(freq))
+
+
 def added_geom_precommit(fid):
     # TODO: Buggy if I add something and then i delete it
     #info("precomit fid"+str(fid))
@@ -134,9 +142,7 @@ def added_geom_precommit(fid):
     layer = layer_from_name(shpName)
     maxFk = get_max_id()
     _id = maxFk + len(shpAdd) + 1
-    freq = QgsFeatureRequest()
-    freq.setFilterFids([fid])
-    feat = list(layer.getFeatures(freq))[0]
+    feat = query_layer_for_fids(shpName, [fid])[0]
 
     # unfortunately the way/order signals work, 
     # it may be attempted to add something twice, so check that geometries are unique
@@ -161,9 +167,7 @@ def removed_geom_precommit(fids):
 
 def changed_geom(layerId, geoms):
     fids = geoms.keys()
-    freq = QgsFeatureRequest()
-    freq.setFilterFids(fids)
-    feats = list(layer_from_name(shpName).getFeatures(freq))
+    feats = query_layer_for_fids(shpName, fids)
     fks_to_change = get_fk_set(shpName,shpKeyName,skipFirst=False,fids=fids)
     global shpChange
     shpChange = {k:v for (k,v) in zip(fks_to_change, feats)}
@@ -225,6 +229,9 @@ def update_excel_programmatically():
 
 
     for shpf in shpAdd:
+        #if not query_layer_for_fids(shpName,[shpf.id()]):
+        #    info("Feature id {} will not be added because it cannot be found at commit time".format(shpf.id()))
+        #    continue
         status_msgs.append("Adding new feature with id {}".format(shpf.attribute(shpKeyName)))
         write_feature_to_excel(w_sheet, write_idx, shpf)
         write_idx+=1
