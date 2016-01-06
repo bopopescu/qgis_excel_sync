@@ -87,25 +87,53 @@ def excel_changed():
     update_shp_from_excel()
 
 def get_max_id():
-    return 100 # TODO: actually get
+    layer = layer_from_name(shpName)
+    # FIXME dont hardcode 0
+    vals = layer.uniqueValues(0) # it returns those as strings :(
+    return max(map(long,vals))
 
 def added_geom(layerId, feats):
-    # How to get max id from uncommited things?
+    # unused for now
     info("added feats "+str(feats))
+    layer = layer_from_name(shpName)
     maxFk = get_max_id()
     for i,_ in enumerate(feats):
         _id = maxFk + i + 1
-        info("prev attr"+ str(feats[i].attribute(shpKeyName)))
-        #FIXME  this doesn't set it?
         feats[i].setAttribute(shpKeyName,_id)
-        # use layer changeAttributeValue here 
-        #info("layer is editable")
+        res = layer.changeAttributeValue(feats[i].id(),0,str(_id))
+        info("managed to update?"+str(res)+" layer editable?" +str(layer.isEditable()) )
 
     global shpAdd
     shpAdd = feats
 
 
-def removed_geom(fids):
+def added_geom_precommit(fid):
+    # TODO: Unsure what happens if adding + deleting without commiting
+    #info("precomit fid"+str(fid))
+    global shpAdd
+    layer = layer_from_name(shpName)
+    maxFk = get_max_id()
+    _id = maxFk + len(shpAdd) + 1
+    freq = QgsFeatureRequest()
+    freq.setFilterFids([fid])
+    feat = list(layer.getFeatures(freq))[0]
+
+    # unfortunately the way/order signals work, 
+    # it may be attempted to add something twice, so check that geometries are unique
+    for f in shpAdd:
+        #info("shpadd:"+str(f.geometry().exportToWkt())+" vs "+str(feat.geometry().exportToWkt()))
+        # plain geometry equality check seems to not work
+        if f.geometry().exportToWkt() == feat.geometry().exportToWkt():
+            #info("will skip this one")
+            return
+
+    feat.setAttribute(shpKeyName,_id)
+    res = layer.changeAttributeValue(feat.id(),0,str(_id)) # TODO: Don't hardcode 0
+    #info("managed to update?"+str(res)+" layer editable?" +str(layer.isEditable()) )
+    shpAdd.append(feat)
+
+
+def removed_geom_precommit(fids):
     #info("Removed fids"+str(fids))
     fks_to_remove = get_fk_set(shpName,shpKeyName,skipFirst=False,fids=fids,useProvider=True)
     global shpRemove
@@ -139,7 +167,7 @@ def write_rowvals_to_excel(sheet, idx, vals, ignore=None):
 
 def update_excel_programmatically():
 
-    from xlrd import open_workbook # http://pypi.python.org/pypi/xlrd
+    from xlrd import open_workbook
     import xlwt
 
     rb = open_workbook(excelPath,formatting_info=True)
@@ -154,8 +182,7 @@ def update_excel_programmatically():
             vals = r_sheet.row_values(row_index)
             write_rowvals_to_excel(w_sheet, write_idx, vals)
             write_idx+=1
-            continue
-            
+            continue         
         #print(r_sheet.cell(row_index,1).value)
         fk = r_sheet.cell(row_index, excelFkIdx).value
         maxFk = max(maxFk, long(fk))
@@ -175,7 +202,7 @@ def update_excel_programmatically():
         write_idx+=1
 
 
-    for i,shpf in enumerate(shpAdd):
+    for shpf in shpAdd:
         write_feature_to_excel(w_sheet, write_idx, shpf)
         write_idx+=1
 
@@ -233,8 +260,8 @@ def init():
     filewatcher = QFileSystemWatcher([excelPath])
     filewatcher.fileChanged.connect(excel_changed)
     shpLayer = layer_from_name(shpName)
-    shpLayer.committedFeaturesAdded.connect(added_geom)
+    shpLayer.featureAdded.connect(added_geom_precommit)
     #shpLayer.committedFeaturesRemoved.connect(removed_geom)
-    shpLayer.featuresDeleted.connect(removed_geom)
+    shpLayer.featuresDeleted.connect(removed_geom_precommit)
     shpLayer.committedGeometriesChanges.connect(changed_geom)
     shpLayer.editingStopped.connect(update_excel_from_shp)
