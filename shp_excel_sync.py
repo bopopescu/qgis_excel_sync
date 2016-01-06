@@ -30,7 +30,7 @@ shpKeyName="ef_key"
 # non configurable - no edits beyond this point
 skipFirstLineExcel = True
 
-# state variables 
+# state variables
 filewatcher=None
 shpAdd = {}
 shpChange = {}
@@ -41,7 +41,7 @@ def reload_excel():
     path = excelPath
     layer = layer_from_name(excelName)
     import os
-    fsize=os.stat(excelPath).st_size 
+    fsize=os.stat(excelPath).st_size
     info("fsize "+str(fsize))
     if fsize==0:
         info("File empty. Won't reload yet")
@@ -67,7 +67,6 @@ def get_fk_set(layerName, fkName, skipFirst=True, fids=None):
         fk = f.attribute(fkName)
         fkSet.append(fk)
     return fkSet
-       
 
 def info(msg):
     QgsMessageLog.logMessage(str(msg), logTag, QgsMessageLog.INFO)
@@ -98,7 +97,7 @@ def removed_geom(layerId, fids):
 
 def changed_geom(layerId, geoms):
     fids = geoms.keys()
-    freq = QgsFeatureRequest() 
+    freq = QgsFeatureRequest()
     freq.setFilterFids(fids)
     feats = list(layer_from_name(shpName).getFeatures(freq))
     fks_to_change = get_fk_set(shpName,shpKeyName,skipFirst=False,fids=fids)
@@ -110,16 +109,7 @@ def changed_geom(layerId, geoms):
 def write_feature_to_excel(sheet, idx, feat):
    area = str(feat.geometry().area()*0.0001) # Square meters to hectare
    centroid = str(feat.geometry().centroid().asPoint())
-   for i in range(feat.fields().count()):
-       
-       fname = feat.fields().at(i).name()
-       info("writing field "+fname)
-       val = feat.attribute(fname)
-       if val is None:
-           val=''
-       else:
-           val = str(val)
-       sheet.write(idx,i, val)
+   sheet.write(idx, excelFkIdx, feat[shpKeyName])
    sheet.write(idx, excelCentroidIdx, centroid)
    sheet.write(idx, excelAreaIdx, area)
 
@@ -140,7 +130,7 @@ def update_excel_programmatically():
     wb = xlwt.Workbook()
     w_sheet = wb.add_sheet(excelSheetName, cell_overwrite_ok=True)
     write_idx = 0
-    
+
     for row_index in range(r_sheet.nrows):
         #print(r_sheet.cell(row_index,1).value)
         fk = r_sheet.cell(row_index, excelFkIdx).value
@@ -152,14 +142,13 @@ def update_excel_programmatically():
             vals = r_sheet.row_values(row_index)
             write_rowvals_to_excel(w_sheet, write_idx, vals,
                     ignore=[excelCentroidIdx, excelAreaIdx])
-           
         else:# else just copy the row
             vals = r_sheet.row_values(row_index)
             write_rowvals_to_excel(w_sheet, write_idx, vals)
-       
+
         write_idx+=1
-         
-         
+
+
     for key in shpAdd.keys():
         shpf = shpAdd[key]
         write_feature_to_excel(w_sheet, write_idx, shpf)
@@ -179,7 +168,7 @@ def update_excel_from_shp():
     global shpRemove
     shpAdd = {}
     shpChange = {}
-    shpRemove = Set([]) 
+    shpRemove = Set([])
 
 
 def updateShpLayer(fksToRemove):
@@ -191,7 +180,6 @@ def updateShpLayer(fksToRemove):
 #         if f.attribute(shpKeyName) in fksToRemove:
 #             layer.deleteFeature(f.id())
 #    layer.commitChanges()
-     
 
 def update_shp_from_excel():
     excelFks = Set(get_fk_set(excelName, excelKeyName,skipFirst=skipFirstLineExcel))
