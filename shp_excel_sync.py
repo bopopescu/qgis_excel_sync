@@ -32,7 +32,7 @@ skipFirstLineExcel = True
 
 # state variables
 filewatcher=None
-shpAdd = {}
+shpAdd = []
 shpChange = {}
 shpRemove = Set([])
 
@@ -52,12 +52,15 @@ def showWarning(msg):
     QtGui.QMessageBox.information(iface.mainWindow(),'Warning',msg)
 
 
-def get_fk_set(layerName, fkName, skipFirst=True, fids=None):
+def get_fk_set(layerName, fkName, skipFirst=True, fids=None, useProvider=False):
     layer = layer_from_name(layerName)
     freq = QgsFeatureRequest()
     if fids is not None:
         freq.setFilterFids(fids)
-    feats = [f for f in layer.getFeatures(freq)]
+    if not useProvider:
+        feats = [f for f in layer.getFeatures(freq)]
+    else:
+        feats = [f for f in layer.dataProvider().getFeatures(freq)]
     fkSet = []
     first=True
     for f in feats:
@@ -83,17 +86,31 @@ def excel_changed():
     reload_excel()
     update_shp_from_excel()
 
+def get_max_id():
+    return 100 # TODO: actually get
+
 def added_geom(layerId, feats):
+    # How to get max id from uncommited things?
     info("added feats "+str(feats))
-    fks_to_add = [feat.attribute(shpKeyName) for feat in feats]
+    maxFk = get_max_id()
+    for i,_ in enumerate(feats):
+        _id = maxFk + i + 1
+        info("prev attr"+ str(feats[i].attribute(shpKeyName)))
+        #FIXME  this doesn't set it?
+        feats[i].setAttribute(shpKeyName,_id)
+        # use layer changeAttributeValue here 
+        #info("layer is editable")
+
     global shpAdd
-    shpAdd = {k:v for (k,v) in zip(fks_to_add, feats)}
+    shpAdd = feats
 
 
-def removed_geom(layerId, fids):
-    fks_to_remove = get_fk_set(shpName,shpKeyName,skipFirst=False,fids=fids)
+def removed_geom(fids):
+    #info("Removed fids"+str(fids))
+    fks_to_remove = get_fk_set(shpName,shpKeyName,skipFirst=False,fids=fids,useProvider=True)
     global shpRemove
     shpRemove = Set(fks_to_remove)
+    info("feat ids to remove"+str(shpRemove))
 
 def changed_geom(layerId, geoms):
     fids = geoms.keys()
@@ -107,7 +124,7 @@ def changed_geom(layerId, geoms):
 
 
 def write_feature_to_excel(sheet, idx, feat):
-   area = str(feat.geometry().area()*0.0001) # Square meters to hectare
+   area = feat.geometry().area()*0.0001 # Square meters to hectare
    centroid = str(feat.geometry().centroid().asPoint())
    sheet.write(idx, excelFkIdx, feat[shpKeyName])
    sheet.write(idx, excelCentroidIdx, centroid)
@@ -131,9 +148,18 @@ def update_excel_programmatically():
     w_sheet = wb.add_sheet(excelSheetName, cell_overwrite_ok=True)
     write_idx = 0
 
+    maxFk = 0
     for row_index in range(r_sheet.nrows):
+        if row_index==0: # copy header
+            vals = r_sheet.row_values(row_index)
+            write_rowvals_to_excel(w_sheet, write_idx, vals)
+            write_idx+=1
+            continue
+            
         #print(r_sheet.cell(row_index,1).value)
         fk = r_sheet.cell(row_index, excelFkIdx).value
+        maxFk = max(maxFk, long(fk))
+        fk = str(long(fk)) # FIXME: Why do we have the keys as strings from the shp?
         if fk in shpRemove:
             continue
         if fk in shpChange.keys():
@@ -149,8 +175,7 @@ def update_excel_programmatically():
         write_idx+=1
 
 
-    for key in shpAdd.keys():
-        shpf = shpAdd[key]
+    for i,shpf in enumerate(shpAdd):
         write_feature_to_excel(w_sheet, write_idx, shpf)
         write_idx+=1
 
@@ -166,7 +191,7 @@ def update_excel_from_shp():
     global shpAdd
     global shpChange
     global shpRemove
-    shpAdd = {}
+    shpAdd = []
     shpChange = {}
     shpRemove = Set([])
 
@@ -209,6 +234,7 @@ def init():
     filewatcher.fileChanged.connect(excel_changed)
     shpLayer = layer_from_name(shpName)
     shpLayer.committedFeaturesAdded.connect(added_geom)
-    shpLayer.committedFeaturesRemoved.connect(removed_geom)
+    #shpLayer.committedFeaturesRemoved.connect(removed_geom)
+    shpLayer.featuresDeleted.connect(removed_geom)
     shpLayer.committedGeometriesChanges.connect(changed_geom)
     shpLayer.editingStopped.connect(update_excel_from_shp)
