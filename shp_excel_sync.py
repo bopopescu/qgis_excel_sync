@@ -13,6 +13,21 @@ def layer_from_name(layerName):
             return layer
     return None
 
+def get_fields(layerName):
+    return [f for f in layer_from_name(layerName).getFeatures()][0].fields()
+
+def field_idx_from_name(layerName, fieldName):
+    fields = get_fields(layerName)
+    for i in range(fields.count()):
+        if fields.at(i).name() == fieldName:
+            return i
+
+    raise Exception("Layer {} doesn't have field {}".format(layerName, fieldName))
+
+def field_name_from_idx(layerName, idx):
+    fields = get_fields(layerName)
+    return fields.at(idx).name()
+
 # configurable
 logTag="OpenGIS" # in which tab log messages appear
 # excel layer
@@ -22,10 +37,11 @@ excelFkIdx = 1
 excelCentroidIdx = 70
 excelAreaIdx = 8
 excelPath=layer_from_name(excelName).publicSource()
-excelKeyName = [f for f in layer_from_name(excelName).getFeatures()][0].fields().at(excelFkIdx).name()
+excelKeyName = field_name_from_idx(excelName, excelFkIdx)
 # shpfile layer
 shpName="Massnahmepool"
 shpKeyName="ef_key"
+shpKeyIdx = field_idx_from_name(shpName, shpKeyName)
 
 # non configurable - no edits beyond this point
 skipFirstLineExcel = True
@@ -88,8 +104,7 @@ def excel_changed():
 
 def get_max_id():
     layer = layer_from_name(shpName)
-    # FIXME dont hardcode 0
-    vals = layer.uniqueValues(0) # it returns those as strings :(
+    vals = layer.uniqueValues(shpKeyIdx) # it returns those as strings :(
     return max(map(long,vals))
 
 def added_geom(layerId, feats):
@@ -100,7 +115,7 @@ def added_geom(layerId, feats):
     for i,_ in enumerate(feats):
         _id = maxFk + i + 1
         feats[i].setAttribute(shpKeyName,_id)
-        res = layer.changeAttributeValue(feats[i].id(),0,str(_id))
+        res = layer.changeAttributeValue(feats[i].id(),shpKeyIdx,str(_id))
         info("managed to update?"+str(res)+" layer editable?" +str(layer.isEditable()) )
 
     global shpAdd
@@ -128,8 +143,7 @@ def added_geom_precommit(fid):
             return
 
     feat.setAttribute(shpKeyName,_id)
-    res = layer.changeAttributeValue(feat.id(),0,str(_id)) # TODO: Don't hardcode 0
-    #info("managed to update?"+str(res)+" layer editable?" +str(layer.isEditable()) )
+    res = layer.changeAttributeValue(feat.id(),shpKeyIdx,str(_id))
     shpAdd.append(feat)
 
 
