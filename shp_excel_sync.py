@@ -52,21 +52,8 @@ shpAdd = []
 shpChange = {}
 shpRemove = Set([])
 
-
-def reload_excel():
-    path = excelPath
-    layer = layer_from_name(excelName)
-    import os
-    fsize=os.stat(excelPath).st_size
-    info("fsize "+str(fsize))
-    if fsize==0:
-        info("File empty. Won't reload yet")
-        return
-    layer.dataProvider().forceReload()
-
 def showWarning(msg):
     QtGui.QMessageBox.information(iface.mainWindow(),'Warning',msg)
-
 
 def get_fk_set(layerName, fkName, skipFirst=True, fids=None, useProvider=False):
     layer = layer_from_name(layerName)
@@ -97,6 +84,25 @@ def warn(msg):
 def error(msg):
     QgsMessageLog.logMessage(str(msg), logTag, QgsMessageLog.CRITICAL)
 
+def show_message_bar(status_msgs):
+    if isinstance(status_msgs,str):
+        text=status_msgs
+    else:
+        text = '\n'.join(status_msgs)
+    iface.messageBar().pushInfo(u'Message from {}'.format(logTag), text)
+
+def reload_excel():
+    path = excelPath
+    layer = layer_from_name(excelName)
+    import os
+    fsize=os.stat(excelPath).st_size
+    info("fsize "+str(fsize))
+    if fsize==0:
+        info("File empty. Won't reload yet")
+        return
+    layer.dataProvider().forceReload()
+    show_message_bar("Excel reloaded from disk.")
+
 def excel_changed():
     info("Excel changed on disk - need to sync")
     reload_excel()
@@ -116,7 +122,6 @@ def added_geom(layerId, feats):
         _id = maxFk + i + 1
         feats[i].setAttribute(shpKeyName,_id)
         res = layer.changeAttributeValue(feats[i].id(),shpKeyIdx,str(_id))
-        info("managed to update?"+str(res)+" layer editable?" +str(layer.isEditable()) )
 
     global shpAdd
     shpAdd = feats
@@ -151,7 +156,7 @@ def removed_geom_precommit(fids):
     #info("Removed fids"+str(fids))
     fks_to_remove = get_fk_set(shpName,shpKeyName,skipFirst=False,fids=fids,useProvider=True)
     global shpRemove
-    shpRemove = Set(fks_to_remove)
+    shpRemove = shpRemove.union(fks_to_remove)
     info("feat ids to remove"+str(shpRemove))
 
 def changed_geom(layerId, geoms):
@@ -183,6 +188,7 @@ def update_excel_programmatically():
 
     from xlrd import open_workbook
     import xlwt
+    status_msgs =[]
 
     rb = open_workbook(excelPath,formatting_info=True)
     r_sheet = rb.sheet_by_name(excelSheetName) # read only copy
@@ -202,8 +208,10 @@ def update_excel_programmatically():
         maxFk = max(maxFk, long(fk))
         fk = str(long(fk)) # FIXME: Why do we have the keys as strings from the shp?
         if fk in shpRemove:
+            status_msgs.append("Removing feature with id {}".format(fk))
             continue
         if fk in shpChange.keys():
+            status_msgs.append("Syncing geometry change to feature with id {}".format(fk))
             shpf = shpChange[fk]
             write_feature_to_excel(w_sheet, write_idx, shpf)
             vals = r_sheet.row_values(row_index)
@@ -217,10 +225,13 @@ def update_excel_programmatically():
 
 
     for shpf in shpAdd:
+        status_msgs.append("Adding new feature with id {}".format(shpf.attribute(shpKeyName)))
         write_feature_to_excel(w_sheet, write_idx, shpf)
         write_idx+=1
 
+    info('\n'.join(status_msgs))
     wb.save(excelPath)
+    show_message_bar(status_msgs)
 
 
 def update_excel_from_shp():
@@ -274,8 +285,8 @@ def update_shp_from_excel():
     if inExcelButNotInShp:
          warn("There are rows in the excel file with no matching geometry {}.".format(inExcelButNotInShp))
          #FIXME: if those are added later then they will be added twice..
+         
     if inShpButNotInExcel:
-        info("Will remove features "+str(inShpButNotInExcel)+"from shapefile because they have been removed from excel")
         updateShpLayer(inShpButNotInExcel)
 
 def init():
