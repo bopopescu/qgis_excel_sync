@@ -108,7 +108,7 @@ def added_geom(layerId, feats):
 
 
 def added_geom_precommit(fid):
-    # TODO: Unsure what happens if adding + deleting without commiting
+    # TODO: Buggy if I add something and then i delete it
     #info("precomit fid"+str(fid))
     global shpAdd
     layer = layer_from_name(shpName)
@@ -224,14 +224,24 @@ def update_excel_from_shp():
 
 
 def updateShpLayer(fksToRemove):
-    layer = layer_from_name(shpName)
-    feats = [f for f in layer.getFeatures()]
-# MK, 3.1.2015: Not sure this should be done without user confirmation.
-#    layer.startEditing()
-#    for f in feats:
-#         if f.attribute(shpKeyName) in fksToRemove:
-#             layer.deleteFeature(f.id())
-#    layer.commitChanges()
+    if not fksToRemove:
+        return
+
+    prompt_msg = "Attempt to synchronize between Excel and Shapefile. Shapefile has features with ids: ({}) that don't appear in the Excel. Delete those features from the shapefile? ".format(','.join(fksToRemove))
+    reply = QtGui.QMessageBox.question(iface.mainWindow(), 'Message', 
+                     prompt_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+
+    if reply == QtGui.QMessageBox.Yes:
+        layer = layer_from_name(shpName)
+        feats = [f for f in layer.getFeatures()]
+        layer.startEditing()
+        for f in feats:
+            if f.attribute(shpKeyName) in fksToRemove:
+                layer.deleteFeature(f.id())
+        layer.commitChanges()
+    else:
+        return
+
 
 def update_shp_from_excel():
     excelFks = Set(get_fk_set(excelName, excelKeyName,skipFirst=skipFirstLineExcel))
@@ -249,6 +259,7 @@ def update_shp_from_excel():
     inExcelButNotInShp = excelFks - shpFks
     if inExcelButNotInShp:
          warn("There are rows in the excel file with no matching geometry {}.".format(inExcelButNotInShp))
+         #FIXME: if those are added later then they will be added twice..
     if inShpButNotInExcel:
         info("Will remove features "+str(inShpButNotInExcel)+"from shapefile because they have been removed from excel")
         updateShpLayer(inShpButNotInExcel)
