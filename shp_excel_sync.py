@@ -319,8 +319,10 @@ def update_shp_from_excel():
 def activateFileWatcher():
     global filewatcher
     filewatcher = QFileSystemWatcher([excelPath])
+    filewatcher.fileChanged.connect(excel_changed)
 
 def deactivateFileWatcher():
+    filewatcher.fileChanged.disconnect(excel_changed)
     filewatcher.removePath(excelPath)
 
 def activateShpConnections():
