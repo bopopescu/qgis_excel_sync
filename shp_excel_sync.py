@@ -219,7 +219,7 @@ def update_excel_programmatically():
             write_feature_to_excel(w_sheet, write_idx, shpf)
             vals = r_sheet.row_values(row_index)
             write_rowvals_to_excel(w_sheet, write_idx, vals,
-                    ignore=[excelCentroidIdx, excelAreaIdx])
+                    ignore=[excelCentroidxIdx, excelCentroidyIdx, excelAreaIdx])
         else:# else just copy the row
             vals = r_sheet.row_values(row_index)
             write_rowvals_to_excel(w_sheet, write_idx, vals)
