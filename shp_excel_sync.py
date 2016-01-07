@@ -252,9 +252,12 @@ def update_excel_programmatically():
         write_feature_to_excel(w_sheet, write_idx, shpf)
         write_idx += 1
 
-    info('\n'.join(status_msgs)) # FIXME: This can appear a bit strange in the UI
+    info('\n'.join(status_msgs)) # FIXME: The line breaks dont appear in the UI
     wb.save(excelPath)
-    show_message_bar(status_msgs)
+    if status_msgs:
+        show_message_bar(status_msgs)
+    else:
+        show_message_bar("No changes to shapefile to sync.")
 
 
 def update_excel_from_shp():
