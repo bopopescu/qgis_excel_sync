@@ -16,17 +16,15 @@ def layer_from_name(layerName):
 
 
 def get_fields(layerName):
-    return [f for f in layer_from_name(layerName).getFeatures()][0].fields()
-
+    return layer_from_name(layerName).fields()
 
 def field_idx_from_name(layerName, fieldName):
-    fields = get_fields(layerName)
-    for i in range(fields.count()):
-        if fields.at(i).name() == fieldName:
-            return i
-
-    raise Exception(
-        "Layer {} doesn't have field {}".format(layerName, fieldName))
+    idx = layer_from_name(layerName).fieldNameIndex(fieldName)
+    if idx != -1:
+        return idx
+    else:
+        raise Exception(
+            "Layer {} doesn't have field {}".format(layerName, fieldName))
 
 
 def field_name_from_idx(layerName, idx):
@@ -157,7 +155,7 @@ def added_geom_precommit(fid):
     if fid > 0:
         return
 
-    # TODO: Buggy if I add something and then i delete it
+    # FIXME: Buggy if I add something and then i delete it in the same edit session
     #info("precomit fid"+str(fid))
     global shpAdd
     layer = layer_from_name(shpName)
@@ -221,7 +219,7 @@ def update_excel_programmatically():
 
     maxFk = 0
     for row_index in range(r_sheet.nrows):
-        if row_index == 0:  # copy header
+        if row_index < skipFirstLineExcel:  # copy header and/or dummy lines
             vals = r_sheet.row_values(row_index)
             write_rowvals_to_excel(w_sheet, write_idx, vals)
             write_idx += 1
@@ -229,8 +227,6 @@ def update_excel_programmatically():
         # print(r_sheet.cell(row_index,1).value)
         fk = r_sheet.cell(row_index, excelFkIdx).value
         maxFk = max(maxFk, fk)
-        # fk = str(long(fk)) # FIXME: Why do we have the keys as strings from
-        # the shp?
         if fk in shpRemove:
             status_msgs.append("Removing feature with id {}".format(fk))
             continue
@@ -249,15 +245,12 @@ def update_excel_programmatically():
         write_idx += 1
 
     for shpf in shpAdd:
-        # if not query_layer_for_fids(shpName,[shpf.id()]):
-        #    info("Feature id {} will not be added because it cannot be found at commit time".format(shpf.id()))
-        #    continue
         status_msgs.append(
             "Adding new feature with id {}".format(shpf.attribute(shpKeyName)))
         write_feature_to_excel(w_sheet, write_idx, shpf)
         write_idx += 1
 
-    info('\n'.join(status_msgs))
+    info('\n'.join(status_msgs)) # FIXME: This can appear a bit strange in the UI
     wb.save(excelPath)
     show_message_bar(status_msgs)
 
