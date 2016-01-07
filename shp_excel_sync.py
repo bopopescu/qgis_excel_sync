@@ -154,9 +154,6 @@ def added_geom_precommit(fid):
     # Temporary features have fid < 0
     if fid > 0:
         return
-
-    # FIXME: Buggy if I add something and then i delete it in the same edit session
-    #info("precomit fid"+str(fid))
     global shpAdd
     layer = layer_from_name(shpName)
     maxFk = get_max_id()
@@ -171,6 +168,11 @@ def added_geom_precommit(fid):
 
 def removed_geom_precommit(fids):
     #info("Removed fids"+str(fids))
+    global shpAdd
+    # remove from edit buffer, if present
+    for feat in shpAdd:
+        if feat.id() in fids:
+            shpAdd.remove(feat)
     fks_to_remove = get_fk_set(
         shpName, shpKeyName, skipFirst=0, fids=fids, useProvider=True)
     global shpRemove
