@@ -100,7 +100,7 @@ def show_message_bar(status_msgs):
     if isinstance(status_msgs, str):
         text = status_msgs
     else:
-        text = '\n'.join(status_msgs)
+        text = '</br>'.join(status_msgs)
     iface.messageBar().pushInfo(u'Message from {}'.format(logTag), text)
 
 
@@ -150,8 +150,9 @@ def query_layer_for_fids(layerName, fids):
 
 
 def added_geom_precommit(fid):
-    # Only when features are added to the edit buffer and not after commit.
+    # Only when features are added to the edit buffer and not when committed to the layer
     # Temporary features have fid < 0
+    # FIXME: Bug when adding + deleting the same feature in the same edit session
     if fid > 0:
         return
     global shpAdd
@@ -168,11 +169,6 @@ def added_geom_precommit(fid):
 
 def removed_geom_precommit(fids):
     #info("Removed fids"+str(fids))
-    global shpAdd
-    # remove from edit buffer, if present
-    for feat in shpAdd:
-        if feat.id() in fids:
-            shpAdd.remove(feat)
     fks_to_remove = get_fk_set(
         shpName, shpKeyName, skipFirst=0, fids=fids, useProvider=True)
     global shpRemove
@@ -219,7 +215,6 @@ def update_excel_programmatically():
     w_sheet = wb.add_sheet(excelSheetName, cell_overwrite_ok=True)
     write_idx = 0
 
-    maxFk = 0
     for row_index in range(r_sheet.nrows):
         if row_index < skipFirstLineExcel:  # copy header and/or dummy lines
             vals = r_sheet.row_values(row_index)
@@ -228,7 +223,6 @@ def update_excel_programmatically():
             continue
         # print(r_sheet.cell(row_index,1).value)
         fk = r_sheet.cell(row_index, excelFkIdx).value
-        maxFk = max(maxFk, fk)
         if fk in shpRemove:
             status_msgs.append("Removing feature with id {}".format(fk))
             continue
@@ -252,7 +246,7 @@ def update_excel_programmatically():
         write_feature_to_excel(w_sheet, write_idx, shpf)
         write_idx += 1
 
-    info('\n'.join(status_msgs)) # FIXME: The line breaks dont appear in the UI
+    info('\n'.join(status_msgs))
     wb.save(excelPath)
     if status_msgs:
         show_message_bar(status_msgs)
@@ -317,6 +311,7 @@ def update_shp_from_excel():
         warn("There are rows in the excel file with no matching geometry {}.".format(
             inExcelButNotInShp))
         # FIXME: if those are added later then they will be added twice..
+        # However, having an autoincrement id suggests features would be added first from shp only?
 
     if inShpButNotInExcel:
         updateShpLayer(inShpButNotInExcel)
