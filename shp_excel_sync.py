@@ -267,7 +267,9 @@ def update_excel_from_shp():
     info("changing:" + str(shpChange))
     info("adding:" + str(shpAdd))
     info("removing" + str(shpRemove))
+    deactivateFileWatcher() # so that we don't sync back and forth
     update_excel_programmatically()
+    activateFileWatcher()
     global shpAdd
     global shpChange
     global shpRemove
@@ -321,16 +323,31 @@ def update_shp_from_excel():
     if inShpButNotInExcel:
         updateShpLayer(inShpButNotInExcel)
 
-
-def init():
-    info("Initial Syncing excel to shp")
-    update_shp_from_excel()
-    global filewatcher  # otherwise the object is lost
+def activateFileWatcher():
+    global filewatcher
     filewatcher = QFileSystemWatcher([excelPath])
-    filewatcher.fileChanged.connect(excel_changed)
+
+def deactivateFileWatcher():
+    filewatcher.removePath(excelPath)
+
+def activateShpConnections():
     shpLayer = layer_from_name(shpName)
     shpLayer.featureAdded.connect(added_geom_precommit)
     # shpLayer.committedFeaturesRemoved.connect(removed_geom)
     shpLayer.featuresDeleted.connect(removed_geom_precommit)
     shpLayer.committedGeometriesChanges.connect(changed_geom)
     shpLayer.editingStopped.connect(update_excel_from_shp)
+
+def deactivateShpConnections():
+    shpLayer = layer_from_name(shpName)
+    shpLayer.featureAdded.disconnect(added_geom_precommit)
+    # shpLayer.committedFeaturesRemoved.disconnect(removed_geom)
+    shpLayer.featuresDeleted.disconnect(removed_geom_precommit)
+    shpLayer.committedGeometriesChanges.disconnect(changed_geom)
+    shpLayer.editingStopped.disconnect(update_excel_from_shp)
+
+def init():
+    info("Initial Syncing excel to shp")
+    update_shp_from_excel()
+    activateFileWatcher()
+    activateShpConnections()
