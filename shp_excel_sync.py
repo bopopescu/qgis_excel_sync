@@ -244,6 +244,14 @@ def update_excel_programmatically():
         show_message_bar("No changes to shapefile to sync.")
     return fidToId
 
+def clear_edit_state():
+    info("Clearing edit state")
+    global shpAdd
+    global shpChange
+    global shpRemove
+    shpAdd = []
+    shpChange = {}
+    shpRemove = Set([])
 
 def update_excel_from_shp():
     info("Will now update excel from edited shapefile")
@@ -259,12 +267,7 @@ def update_excel_from_shp():
         renameIds(fidToId)
         activateShpConnections()
     activateFileWatcher()
-    global shpAdd
-    global shpChange
-    global shpRemove
-    shpAdd = []
-    shpChange = {}
-    shpRemove = Set([])
+    clear_edit_state()
 
 
 def updateShpLayer(fksToRemove):
@@ -328,6 +331,7 @@ def activateShpConnections():
     shpLayer.featuresDeleted.connect(removed_geom_precommit)
     shpLayer.committedGeometriesChanges.connect(changed_geom)
     shpLayer.editingStopped.connect(update_excel_from_shp)
+    shpLayer.beforeRollBack.connect(clear_edit_state)
 
 def deactivateShpConnections():
     shpLayer = layer_from_name(shpName)
@@ -336,6 +340,7 @@ def deactivateShpConnections():
     shpLayer.featuresDeleted.disconnect(removed_geom_precommit)
     shpLayer.committedGeometriesChanges.disconnect(changed_geom)
     shpLayer.editingStopped.disconnect(update_excel_from_shp)
+    shpLayer.beforeRollBack.disconnect(clear_edit_state)
 
 def init():
     info("Initial Syncing excel to shp")
