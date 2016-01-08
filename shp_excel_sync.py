@@ -100,7 +100,7 @@ def show_message_bar(status_msgs):
     if isinstance(status_msgs, str):
         text = status_msgs
     else:
-        text = '</br>'.join(status_msgs)
+        text = '<br>'.join(status_msgs)
     iface.messageBar().pushInfo(u'Message from {}'.format(logTag), text)
 
 
@@ -127,16 +127,22 @@ def get_max_id():
     layer = layer_from_name(shpName)
     return layer.maximumValue(shpKeyIdx)
 
+def renameIds(fidToId):
+    layer = layer_from_name(shpName)
+    layer.startEditing()
+    feats = query_layer_for_fids(shpName, fidToId.keys())
+    for f in feats:
+        res = layer.changeAttributeValue(f.id(), shpKeyIdx, fidToId[f.id()])
+    layer.commitChanges()
+
 
 def added_geom(layerId, feats):
-    # unused for now
     info("added feats " + str(feats))
     layer = layer_from_name(shpName)
     maxFk = get_max_id()
     for i, _ in enumerate(feats):
         _id = maxFk + i + 1
         feats[i].setAttribute(shpKeyName, _id)
-        res = layer.changeAttributeValue(feats[i].id(), shpKeyIdx, _id)
 
     global shpAdd
     shpAdd = feats
@@ -147,24 +153,6 @@ def query_layer_for_fids(layerName, fids):
     freq = QgsFeatureRequest()
     freq.setFilterFids(fids)
     return list(layer.getFeatures(freq))
-
-
-def added_geom_precommit(fid):
-    # Only when features are added to the edit buffer and not when committed to the layer
-    # Temporary features have fid < 0
-    # FIXME: Bug when adding + deleting the same feature in the same edit session
-    if fid > 0:
-        return
-    global shpAdd
-    layer = layer_from_name(shpName)
-    maxFk = get_max_id()
-    _id = maxFk + len(shpAdd) + 1
-    feat = query_layer_for_fids(shpName, [fid])[0]
-
-    feat.setAttribute(shpKeyName, _id)
-    res = layer.changeAttributeValue(feat.id(), shpKeyIdx, _id)
-    info('Set new id for feature {}: {}'.format(feat.id(), _id))
-    shpAdd.append(feat)
 
 
 def removed_geom_precommit(fids):
@@ -240,9 +228,11 @@ def update_excel_programmatically():
 
         write_idx += 1
 
+    fidToId = {}
     for shpf in shpAdd:
         status_msgs.append(
             "Adding new feature with id {}".format(shpf.attribute(shpKeyName)))
+        fidToId[shpf.id()] = shpf.attribute(shpKeyName)
         write_feature_to_excel(w_sheet, write_idx, shpf)
         write_idx += 1
 
@@ -252,6 +242,7 @@ def update_excel_programmatically():
         show_message_bar(status_msgs)
     else:
         show_message_bar("No changes to shapefile to sync.")
+    return fidToId
 
 
 def update_excel_from_shp():
@@ -260,7 +251,13 @@ def update_excel_from_shp():
     info("adding:" + str(shpAdd))
     info("removing" + str(shpRemove))
     deactivateFileWatcher() # so that we don't sync back and forth
-    update_excel_programmatically()
+    fidToId = update_excel_programmatically()
+    # need to alter the ids(not fids) of the new features after, because 
+    # editing the features after they've been commited doesn't work
+    if fidToId:
+        deactivateShpConnections()
+        renameIds(fidToId)
+        activateShpConnections()
     activateFileWatcher()
     global shpAdd
     global shpChange
@@ -327,16 +324,15 @@ def deactivateFileWatcher():
 
 def activateShpConnections():
     shpLayer = layer_from_name(shpName)
-    shpLayer.featureAdded.connect(added_geom_precommit)
-    # shpLayer.committedFeaturesRemoved.connect(removed_geom)
+    shpLayer.committedFeaturesAdded.connect(added_geom)
     shpLayer.featuresDeleted.connect(removed_geom_precommit)
     shpLayer.committedGeometriesChanges.connect(changed_geom)
     shpLayer.editingStopped.connect(update_excel_from_shp)
 
 def deactivateShpConnections():
     shpLayer = layer_from_name(shpName)
-    shpLayer.featureAdded.disconnect(added_geom_precommit)
-    # shpLayer.committedFeaturesRemoved.disconnect(removed_geom)
+    shpLayer.committedFeaturesAdded.disconnect(added_geom)
+    #shpLayer.featureAdded.disconnect(added_geom_precommit)
     shpLayer.featuresDeleted.disconnect(removed_geom_precommit)
     shpLayer.committedGeometriesChanges.disconnect(changed_geom)
     shpLayer.editingStopped.disconnect(update_excel_from_shp)
