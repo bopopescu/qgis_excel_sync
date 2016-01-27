@@ -193,7 +193,7 @@ class shpsync:
         # show the dialog
         #FIXME temporary, for testing
         self.dlg.fieldExp.setLayer(self.iface.activeLayer())
-        #self.dlg.fieldExp.expressionEdited("area($geometry)")
+        self.dlg.fieldExp.setField("area($geometry)")
         #from PyQt4.QtCore import pyqtRemoveInputHook
         #pyqtRemoveInputHook()
         #import pdb;pdb.set_trace()
