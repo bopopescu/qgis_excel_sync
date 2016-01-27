@@ -24,6 +24,7 @@
 import os
 
 from PyQt4 import QtGui, uic
+from qgis.gui import QgsFieldExpressionWidget
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'shpsync_dialog_base.ui'))
@@ -39,3 +40,9 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        hor = QtGui.QHBoxLayout()        
+        self.fieldExp = QgsFieldExpressionWidget()
+        hor.addWidget(QtGui.QComboBox())
+        hor.addWidget(self.fieldExp)
+        hor.addWidget(QtGui.QPushButton("Delete"))
+        self.verticalLayout.addLayout(hor)
