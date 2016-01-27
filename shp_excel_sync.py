@@ -2,7 +2,7 @@ from sets import Set
 from collections import namedtuple
 import os
 
-from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo
+from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression
 from qgis.utils import iface
 from PyQt4.QtCore import QFileSystemWatcher
 from PyQt4 import QtGui
@@ -101,10 +101,8 @@ class Syncer:
         self.filewatcher = None
         self.excelName = settings.excelName  # the layer name
         self.excelSheetName = settings.excelSheetName
-        self.excelFkIdx = 0 # FIXME
-        self.excelCentroidxIdx = 71
-        self.excelCentroidyIdx = 72
-        self.excelAreaIdx = 9
+        self.excelKeyName = settings.excelKeyName
+        self.excelFkIdx = field_idx_from_name(self.excelName, self.excelKeyName)
         self.excelPath = layer_from_name(self.excelName).publicSource()
         self.excelKeyName = field_name_from_idx(self.excelName, self.excelFkIdx)
         # shpfile layer
@@ -195,15 +193,16 @@ class Syncer:
         # info("changed"+str(shpChange))
 
 
+    def get_ignore_indices(self):
+        return [field_idx_from_name(self.excelName,field) for field in self.s.expressions.keys()]
+
+
     def write_feature_to_excel(self,sheet, idx, feat):
-        area = feat.geometry().area() * 0.0001  # Square meters to hectare
-        centroidx = str(feat.geometry().centroid().asPoint().x())
-        centroidy = str(feat.geometry().centroid().asPoint().y())
-        #FIXME how to find those indices/ handle qgs expressions
         sheet.write(idx, self.excelFkIdx, feat[self.shpKeyName])
-        sheet.write(idx, self.excelCentroidxIdx, centroidx)
-        sheet.write(idx, self.excelCentroidyIdx, centroidy)
-        sheet.write(idx, self.excelAreaIdx, area)
+        for (fieldName, exp) in self.s.expressions.iteritems():
+            fieldIdx = field_idx_from_name(self.excelName, fieldName)
+            exp = QgsExpression(exp)
+            sheet.write(idx, fieldIdx, exp.evaluate(feat))
 
 
     def write_rowvals_to_excel(self,sheet, idx, vals, ignore=None):
@@ -242,7 +241,7 @@ class Syncer:
                 self.write_feature_to_excel(w_sheet, write_idx, shpf)
                 vals = r_sheet.row_values(row_index)
                 self.write_rowvals_to_excel(w_sheet, write_idx, vals,
-                                       ignore=[self.excelCentroidxIdx, self.excelCentroidyIdx, self.excelAreaIdx])
+                                       ignore=self.get_ignore_indices())
             else:  # else just copy the row
                 vals = r_sheet.row_values(row_index)
                 self.write_rowvals_to_excel(w_sheet, write_idx, vals)
@@ -284,6 +283,7 @@ class Syncer:
             self.deactivateShpConnections()
             self.renameIds(fidToId)
             self.activateShpConnections()
+        self.reload_excel()
         self.activateFileWatcher()
         self.clear_edit_state()
 

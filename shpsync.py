@@ -34,10 +34,11 @@ from shp_excel_sync import Settings,Syncer
 class shpsync:
     """QGIS Plugin Implementation."""
 
-    def setUpSyncer(self,excelName,excelKeyName,shpName,shpKeyName):
-        s = Settings(excelName,"Tabelle1",excelKeyName,1,shpName,shpKeyName,[])
+    def setUpSyncerTest(self,excelName,excelKeyName,shpName,shpKeyName):
+        """Test the setup"""
+        exps={"Flaeche_ha":"area( $geometry )", "FEE_Nr":"y( $geometry )"}
+        s = Settings(excelName,"Tabelle1",excelKeyName,1,shpName,shpKeyName,exps)
         self.syncer = Syncer(s)
-
 
     def __init__(self, iface):
         """Constructor.
@@ -49,6 +50,7 @@ class shpsync:
         """
         # Save reference to the QGIS interface
         self.iface = iface
+        self.syncer = None
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
