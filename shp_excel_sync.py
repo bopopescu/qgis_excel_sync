@@ -2,7 +2,7 @@ from sets import Set
 from collections import namedtuple
 import os
 
-from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature
+from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo
 from qgis.utils import iface
 from PyQt4.QtCore import QFileSystemWatcher
 from PyQt4 import QtGui
@@ -106,22 +106,41 @@ class Syncer:
         self.excelCentroidyIdx = 72
         self.excelAreaIdx = 9
         self.excelPath = layer_from_name(self.excelName).publicSource()
-        self.excelKeyName = field_name_from_idx(excelName, excelFkIdx)
+        self.excelKeyName = field_name_from_idx(self.excelName, self.excelFkIdx)
         # shpfile layer
         self.shpName = settings.shpName
         self.shpKeyName = settings.shpKeyName
-        self.shpKeyIdx = field_idx_from_name(shpName, shpKeyName)
+        self.shpKeyIdx = field_idx_from_name(self.shpName, self.shpKeyName)
         self.skipLines = settings.skipLines
 
+        self.join()
         self.clear_edit_state()
         self.initialSync()
+
+
+    def join(self):
+        # join the shp layer to the excel layer, non cached
+        # TODO: Ignore if already joined?
+        shpLayer = layer_from_name(self.shpName)
+        jinfo = QgsVectorJoinInfo()
+        jinfo.joinFieldName = self.excelKeyName
+        jinfo.targetFieldName = self.shpKeyName
+        jinfo.joinLayerId = layer_from_name(self.excelName).id()
+        jinfo.memoryCache = False
+        jinfo.prefix=''
+        for jinfo2 in shpLayer.vectorJoins():
+            if jinfo2==jinfo:
+                info("Join already exists. Will not create it again")
+                return
+        info("Adding join between master and slave layers") 
+        shpLayer.addJoin(jinfo)
+
         
 
-
     def reload_excel(self):
-        path = excelPath
+        path = self.excelPath
         layer = layer_from_name(self.excelName)
-        fsize = os.stat(excelPath).st_size
+        fsize = os.stat(self.excelPath).st_size
         info("fsize " + str(fsize))
         if fsize == 0:
             info("File empty. Won't reload yet")
@@ -138,14 +157,14 @@ class Syncer:
 
     def get_max_id(self):
         layer = layer_from_name(self.shpName)
-        return layer.maximumValue(shpKeyIdx)
+        return layer.maximumValue(self.shpKeyIdx)
 
     def renameIds(self,fidToId):
         layer = layer_from_name(self.shpName)
         layer.startEditing()
         feats = query_layer_for_fids(self.shpName, fidToId.keys())
         for f in feats:
-            res = layer.changeAttributeValue(f.id(), shpKeyIdx, fidToId[f.id()])
+            res = layer.changeAttributeValue(f.id(), self.shpKeyIdx, fidToId[f.id()])
         layer.commitChanges()
 
 
@@ -155,7 +174,7 @@ class Syncer:
         maxFk = self.get_max_id()
         for i, _ in enumerate(feats):
             _id = maxFk + i + 1
-            feats[i].setAttribute(shpKeyName, _id)
+            feats[i].setAttribute(self.shpKeyName, _id)
 
         self.shpAdd = feats
 
@@ -165,7 +184,7 @@ class Syncer:
         fks_to_remove = get_fk_set(
             self.shpName, self.shpKeyName, skipFirst=0, fids=fids, useProvider=True)
         self.shpRemove = self.shpRemove.union(fks_to_remove)
-        info("feat ids to remove" + str(shpRemove))
+        info("feat ids to remove" + str(self.shpRemove))
 
 
     def changed_geom(self,layerId, geoms):
@@ -212,18 +231,18 @@ class Syncer:
                 write_idx += 1
                 continue
             # print(r_sheet.cell(row_index,1).value)
-            fk = r_sheet.cell(row_index, excelFkIdx).value
+            fk = r_sheet.cell(row_index, self.excelFkIdx).value
             if fk in self.shpRemove:
                 status_msgs.append("Removing feature with id {}".format(fk))
                 continue
             if fk in self.shpChange.keys():
                 status_msgs.append(
                     "Syncing geometry change to feature with id {}".format(fk))
-                shpf = shpChange[fk]
+                shpf = self.shpChange[fk]
                 self.write_feature_to_excel(w_sheet, write_idx, shpf)
                 vals = r_sheet.row_values(row_index)
                 self.write_rowvals_to_excel(w_sheet, write_idx, vals,
-                                       ignore=[excelCentroidxIdx, excelCentroidyIdx, excelAreaIdx])
+                                       ignore=[self.excelCentroidxIdx, self.excelCentroidyIdx, self.excelAreaIdx])
             else:  # else just copy the row
                 vals = r_sheet.row_values(row_index)
                 self.write_rowvals_to_excel(w_sheet, write_idx, vals)
@@ -233,9 +252,9 @@ class Syncer:
         fidToId = {}
         for shpf in self.shpAdd:
             status_msgs.append(
-                "Adding new feature with id {}".format(shpf.attribute(shpKeyName)))
-            fidToId[shpf.id()] = shpf.attribute(shpKeyName)
-            write_feature_to_excel(w_sheet, write_idx, shpf)
+                "Adding new feature with id {}".format(shpf.attribute(self.shpKeyName)))
+            fidToId[shpf.id()] = shpf.attribute(self.shpKeyName)
+            self.write_feature_to_excel(w_sheet, write_idx, shpf)
             write_idx += 1
 
         info('\n'.join(status_msgs))
@@ -283,7 +302,7 @@ class Syncer:
             feats = [f for f in layer.getFeatures()]
             layer.startEditing()
             for f in feats:
-                if f.attribute(shpKeyName) in fksToRemove:
+                if f.attribute(self.shpKeyName) in fksToRemove:
                     layer.deleteFeature(f.id())
             layer.commitChanges()
         else:

@@ -28,9 +28,16 @@ import resources
 from shpsync_dialog import shpsyncDialog
 import os.path
 
+from shp_excel_sync import Settings,Syncer
+
 
 class shpsync:
     """QGIS Plugin Implementation."""
+
+    def setUpSyncer(self,excelName,excelKeyName,shpName,shpKeyName):
+        s = Settings(excelName,"Tabelle1",excelKeyName,1,shpName,shpKeyName,[])
+        self.syncer = Syncer(s)
+
 
     def __init__(self, iface):
         """Constructor.
