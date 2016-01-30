@@ -67,8 +67,7 @@ class shpsync:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-        # Create the dialog (after translation) and keep reference
-        self.dlg = shpsyncDialog()
+        self.dlg = None
 
         # Declare instance attributes
         self.actions = []
@@ -191,9 +190,10 @@ class shpsync:
     def run(self):
         """Run method that performs all the real work"""
         # show the dialog
-        #FIXME temporary, for testing
-        self.dlg.fieldExp.setLayer(self.iface.activeLayer())
-        self.dlg.fieldExp.setField("area($geometry)")
+        if self.dlg is not None:
+            del self.dlg
+        self.dlg = shpsyncDialog()
+        self.dlg.exps[0].setField("area($geometry)")
         #from PyQt4.QtCore import pyqtRemoveInputHook
         #pyqtRemoveInputHook()
         #import pdb;pdb.set_trace()
