@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication,QObject
 from PyQt4.QtGui import QAction, QIcon
 # Initialize Qt resources from file resources.py
 import resources
@@ -28,7 +28,10 @@ import resources
 from shpsync_dialog import shpsyncDialog
 import os.path
 
+from qgis._core import QgsProject
+
 from shp_excel_sync import Settings,Syncer
+from project_handler import ProjectHandler
 
 
 class shpsync:
@@ -75,6 +78,44 @@ class shpsync:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'shpsync')
         self.toolbar.setObjectName(u'shpsync')
+        self.initProject()
+
+    def initProject(self):
+        """ initialize project related connections """
+        self.iface.projectRead.connect(self.readSettings)
+        QObject.connect(QgsProject.instance(), SIGNAL("writeProject(QDomDocument &)"),
+                        self.writeSettings)
+
+    def readSettings(self):
+        # "Settings","excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions")
+        metasettings = OrderedDict()
+        metasettings["excelName"] = str
+        metasettings["excelSheetName"] = str
+        metasettings["excelKeyName"] = str
+        metasettings["skipLines"] = int
+        metasettings["shpKeyName"] = str
+        metasettings["shpName"] = str
+        metasettings["expressions"] = list
+        settings_dict = ProjectHandler.readSettings("SHPSYNC",metasettings)
+        if not settings_dict:
+            return
+        else:
+            exps = settings_dict["expressions"]
+            exps_dict = {}
+            for exp in exps:
+                kv = exp.split(":::")
+                exps_dict[kv[0]] =kv[1] 
+            settings = Settings(settings_dict["excelName"],settings_dict["excelSheetName"],settings_dict["excelKeyName"],
+                    settings_dict["skipLines"],settings_dict["shpName"],settings_dict["shpKeyName"],exps_dict)
+            self.initSyncer(settings)
+
+
+    def writeSettings(self,doc):
+        if self.syncer is None:
+            return
+        settings  = self.syncer.s._asdict()
+        settings["expressions"] = [ "{}:::{}".format(k,v) for k,v in settings["expressions"].iteritems()]
+        ProjectHandler.writeSettings("SHPSYNC",settings)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):

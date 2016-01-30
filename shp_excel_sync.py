@@ -4,7 +4,7 @@ import os
 
 from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression
 from qgis.utils import iface
-from PyQt4.QtCore import QFileSystemWatcher
+from PyQt4.QtCore import QFileSystemWatcher, QObject
 from PyQt4 import QtGui
 from xlrd import open_workbook
 import xlwt
@@ -93,10 +93,10 @@ def show_message_bar(status_msgs):
     iface.messageBar().pushInfo(u'Message from {}'.format(logTag), text)
 
 
-class Syncer:
-
+class Syncer(QObject):
 
     def __init__(self, settings):
+        QObject.__init__(self)
         self.s = settings
         self.filewatcher = None
         self.excelName = settings.excelName  # the layer name
