@@ -20,16 +20,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication,QObject
-from PyQt4.QtGui import QAction, QIcon
-# Initialize Qt resources from file resources.py
-import resources
-# Import the code for the dialog
-from shpsync_dialog import shpsyncDialog
 import os.path
+from collections import OrderedDict
 
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QObject, SIGNAL
+from PyQt4.QtGui import QAction, QIcon
 from qgis._core import QgsProject
 
+import resources
+from shpsync_dialog import shpsyncDialog
 from shp_excel_sync import Settings,Syncer
 from project_handler import ProjectHandler
 
