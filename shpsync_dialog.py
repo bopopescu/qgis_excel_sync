@@ -46,12 +46,14 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         self.exps = []
         self.dels = []
         self.combos = []
+        self.hors = []
         self.slave = None
         self.master = None
         self.addExpressionWidget()
         self.addExpressionWidget()
         self.populate(self.comboBox_master,isMaster=True)
         self.populate(self.comboBox_slave,isMaster=False)
+        self.pushButton.clicked.connect(self.addExpressionWidget)
 
     def addExpressionWidget(self):
         hor = QtGui.QHBoxLayout()        
@@ -65,10 +67,37 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         self.dels.append(del_btn)
         self.verticalLayout.addLayout(hor)
         self.exps.append(fieldExp)
+        self.hors.append(hor)
+        if self.slave is not None:
+            self.updateComboBoxFromLayerAttributes(combo,self.slave.pendingFields())
+        if self.master is not None:
+            fieldExp.setLayer(self.master)
+
+        del_btn.clicked.connect(self.removeExpressionWidget)
+
+        # TODO: resize window to fit or make it look nice somehow
+        # TODO: field combo box can be very small
+
+
+    def removeExpressionWidget(self):
+        sender = self.sender()
+        idx = self.dels.index(sender)
+        hor = self.hors[idx]
+        #self.verticalLayout.removeItem(hor.itemAt(0))
+        self.dels[idx].setVisible(False)
+        del self.dels[idx]
+        self.combos[idx].setVisible(False)
+        del self.combos[idx]
+        self.exps[idx].setVisible(False)
+        del self.exps[idx]
+        del self.hors[idx]
+
 
     def populate(self, comboBox, isMaster):
         idlayers = list(QgsMapLayerRegistry.instance().mapLayers().iteritems())
         self.populateFromLayers(comboBox,idlayers, isMaster)
+        if not idlayers:
+            return
         if isMaster:
             self.masterUpdated(0)
         else:
