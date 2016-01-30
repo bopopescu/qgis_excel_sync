@@ -164,9 +164,6 @@ class shpsync:
 
 
     def parseSettings(self):
-        from PyQt4.QtCore import pyqtRemoveInputHook
-        pyqtRemoveInputHook()
-        import pdb;pdb.set_trace()
         exps=self.dlg.getExpressionsDict()
         excelName = self.dlg.comboBox_slave.currentText()
         excelKeyName = self.dlg.comboBox_slave_key.currentText()
@@ -175,8 +172,13 @@ class shpsync:
         excelSheetName  = self.dlg.lineEdit_sheetName.text()
         skipLines = self.dlg.spinBox.value() 
         s = Settings(excelName,excelSheetName,excelKeyName,skipLines,shpName,shpKeyName,exps)
-        self.syncer = Syncer(s)
+        self.initSyncer(s)
         self.hideDialog()
+
+    def initSyncer(self, settings):
+        if self.syncer is not None:
+            del self.syncer
+        self.syncer = Syncer(settings)
 
     def hideDialog(self):
         self.dlg.hide()

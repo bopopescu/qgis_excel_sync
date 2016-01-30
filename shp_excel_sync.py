@@ -364,3 +364,7 @@ class Syncer:
         self.update_shp_from_excel()
         self.activateFileWatcher()
         self.activateShpConnections()
+
+    def __del__(self):
+        self.deactivateFileWatcher()
+        self.deactivateShpConnections()
