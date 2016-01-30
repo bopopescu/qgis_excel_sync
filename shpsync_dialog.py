@@ -51,6 +51,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         self.master = None
         self.addExpressionWidget()
         self.addExpressionWidget()
+        self.addExpressionWidget()
         self.populate(self.comboBox_master,isMaster=True)
         self.populate(self.comboBox_slave,isMaster=False)
         self.pushButton.clicked.connect(self.addExpressionWidget)
@@ -69,14 +70,21 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         self.exps.append(fieldExp)
         self.hors.append(hor)
         if self.slave is not None:
-            self.updateComboBoxFromLayerAttributes(combo,self.slave.pendingFields())
+            self.updateComboBoxFromLayerAttributes(combo,self.slave.fields())
         if self.master is not None:
             fieldExp.setLayer(self.master)
 
         del_btn.clicked.connect(self.removeExpressionWidget)
 
-        # TODO: resize window to fit or make it look nice somehow
-        # TODO: field combo box can be very small
+        # TODO: resize window to fit or make it look nice somehow ?
+        # TODO: field combo box can be very small ?
+
+
+    def getExpressionsDict(self):
+        res = {}
+        for exp, combo in zip(self.exps, self.combos):
+            res[combo.currentText()] = exp.currentText()
+        return res
 
 
     def removeExpressionWidget(self):
@@ -115,15 +123,14 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
 
 
     def updateComboBoxFromLayerAttributes(self, comboBox, attrs):
+        comboBox.clear()
         for attr in attrs:
             comboBox.addItem(attr.name())
-
-
 
     def masterUpdated(self, idx):
         layer = qgis_utils.getLayerFromId(self.comboBox_master.itemData(idx)) 
         self.master = layer
-        attributes = layer.pendingFields() 
+        attributes = layer.fields() 
         self.updateComboBoxFromLayerAttributes(self.comboBox_master_key, attributes)
         # update layer in expressions
         for exp in self.exps:
@@ -132,7 +139,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
     def slaveUpdated(self, idx):
         layer = qgis_utils.getLayerFromId(self.comboBox_slave.itemData(idx)) 
         self.slave = layer
-        attributes = layer.pendingFields() 
+        attributes = layer.fields() 
         self.updateComboBoxFromLayerAttributes(self.comboBox_slave_key, attributes)
         # update sheet name suggestion
         self.lineEdit_sheetName.setText(layer.name())
