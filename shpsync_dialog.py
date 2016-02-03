@@ -66,7 +66,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         hor.addWidget(combo)
         self.combos.append(combo)
         hor.addWidget(fieldExp)
-        del_btn = QtGui.QPushButton("Delete")
+        del_btn = QtGui.QPushButton(self.tr("Delete"))
         hor.addWidget(del_btn)
         self.dels.append(del_btn)
         self.verticalLayout.addLayout(hor)
