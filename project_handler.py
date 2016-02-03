@@ -17,7 +17,7 @@ class ProjectHandler(QObject):
             cls.writeSetting(tag, key, value)
 
     @classmethod
-    def writeSetting(cls,tag, attribute, value):
+    def writeSetting(cls, tag, attribute, value):
         """write plugin settings to QgsProject instance"""
         QgsProject.instance().writeEntry(tag, attribute, value)
 
@@ -51,7 +51,8 @@ class ProjectHandler(QObject):
         for (setting_name, type) in metasettings.items():
 
             try:
-                setting_value = cls.readSetting(tag, setting_name, type_to_read_function_mapping[type])
+                setting_value = cls.readSetting(
+                    tag, setting_name, type_to_read_function_mapping[type])
                 if setting_value is None:
                     raise Exception
                 settings[setting_name] = setting_value

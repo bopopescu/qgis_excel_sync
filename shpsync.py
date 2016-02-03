@@ -29,17 +29,18 @@ from qgis._core import QgsProject
 
 import resources
 from shpsync_dialog import shpsyncDialog
-from shp_excel_sync import Settings,Syncer
+from shp_excel_sync import Settings, Syncer
 from project_handler import ProjectHandler
 
 
 class shpsync:
     """QGIS Plugin Implementation."""
 
-    def setUpSyncerTest(self,excelName,excelKeyName,shpName,shpKeyName):
+    def setUpSyncerTest(self, excelName, excelKeyName, shpName, shpKeyName):
         """Test the setup"""
-        exps={"Flaeche_ha":"area( $geometry )", "FEE_Nr":"y( $geometry )"}
-        s = Settings(excelName,"Tabelle1",excelKeyName,1,shpName,shpKeyName,exps)
+        exps = {"Flaeche_ha": "area( $geometry )", "FEE_Nr": "y( $geometry )"}
+        s = Settings(excelName, "Tabelle1", excelKeyName,
+                     1, shpName, shpKeyName, exps)
         self.syncer = Syncer(s)
 
     def __init__(self, iface):
@@ -95,7 +96,7 @@ class shpsync:
         metasettings["shpKeyName"] = str
         metasettings["shpName"] = str
         metasettings["expressions"] = list
-        settings_dict = ProjectHandler.readSettings("SHPSYNC",metasettings)
+        settings_dict = ProjectHandler.readSettings("SHPSYNC", metasettings)
         if not settings_dict:
             return
         else:
@@ -103,18 +104,18 @@ class shpsync:
             exps_dict = {}
             for exp in exps:
                 kv = exp.split(":::")
-                exps_dict[kv[0]] =kv[1] 
-            settings = Settings(settings_dict["excelName"],settings_dict["excelSheetName"],settings_dict["excelKeyName"],
-                    settings_dict["skipLines"],settings_dict["shpName"],settings_dict["shpKeyName"],exps_dict)
+                exps_dict[kv[0]] = kv[1]
+            settings = Settings(settings_dict["excelName"], settings_dict["excelSheetName"], settings_dict["excelKeyName"],
+                                settings_dict["skipLines"], settings_dict["shpName"], settings_dict["shpKeyName"], exps_dict)
             self.initSyncer(settings)
 
-
-    def writeSettings(self,doc):
+    def writeSettings(self, doc):
         if self.syncer is None:
             return
-        settings  = self.syncer.s._asdict()
-        settings["expressions"] = [ "{}:::{}".format(k,v) for k,v in settings["expressions"].iteritems()]
-        ProjectHandler.writeSettings("SHPSYNC",settings)
+        settings = self.syncer.s._asdict()
+        settings["expressions"] = ["{}:::{}".format(k, v) for k, v in settings[
+            "expressions"].iteritems()]
+        ProjectHandler.writeSettings("SHPSYNC", settings)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -131,18 +132,17 @@ class shpsync:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('shpsync', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
 
         icon = QIcon(icon_path)
         action = QAction(icon, text, parent)
@@ -177,7 +177,6 @@ class shpsync:
             callback=self.run,
             parent=self.iface.mainWindow())
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -187,7 +186,6 @@ class shpsync:
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
         del self.toolbar
-
 
     def run(self):
         """Run method that performs all the real work"""
@@ -202,16 +200,16 @@ class shpsync:
         self.dlg.exps[2].setField("area($geometry)")
         self.dlg.show()
 
-
     def parseSettings(self):
-        exps=self.dlg.getExpressionsDict()
+        exps = self.dlg.getExpressionsDict()
         excelName = self.dlg.comboBox_slave.currentText()
         excelKeyName = self.dlg.comboBox_slave_key.currentText()
         shpName = self.dlg.comboBox_master.currentText()
         shpKeyName = self.dlg.comboBox_master_key.currentText()
-        excelSheetName  = self.dlg.lineEdit_sheetName.text()
-        skipLines = self.dlg.spinBox.value() 
-        s = Settings(excelName,excelSheetName,excelKeyName,skipLines,shpName,shpKeyName,exps)
+        excelSheetName = self.dlg.lineEdit_sheetName.text()
+        skipLines = self.dlg.spinBox.value()
+        s = Settings(excelName, excelSheetName, excelKeyName,
+                     skipLines, shpName, shpKeyName, exps)
         self.initSyncer(s)
         self.hideDialog()
 

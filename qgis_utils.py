@@ -78,7 +78,8 @@ def doesLayerNameExist(name):
 
 
 def getIdFromLayerName(layerName):
-    # Important: If multiple layers with same name exist, it will return the first one it finds
+    # Important: If multiple layers with same name exist, it will return the
+    # first one it finds
     for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
         if unicode(layer.name()) == layerName:
             return id
@@ -86,7 +87,8 @@ def getIdFromLayerName(layerName):
 
 
 def getLayerFromLayerName(layerName):
-    # Important: If multiple layers with same name exist, it will return the first one it finds
+    # Important: If multiple layers with same name exist, it will return the
+    # first one it finds
     for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
         if unicode(layer.name()) == layerName:
             return layer
@@ -96,4 +98,3 @@ def getLayerFromLayerName(layerName):
 def getNameFromLayerId(layerId):
     layer = QgsMapLayerRegistry.instance().mapLayers()[layerId]
     return unicode(layer.name())
-

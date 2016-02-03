@@ -3,7 +3,7 @@ from collections import namedtuple
 import os
 import sys
 
-pluginpath=os.path.dirname(__file__)
+pluginpath = os.path.dirname(__file__)
 for file in os.listdir(pluginpath):
     if file.endswith('.egg'):
         sys.path.append(os.path.join(pluginpath, file))
@@ -16,7 +16,6 @@ from xlrd import open_workbook
 import xlwt
 
 
-
 def layer_from_name(layerName):
     # Important: If multiple layers with same name exist, it will return the
     # first one it finds
@@ -25,14 +24,17 @@ def layer_from_name(layerName):
             return layer
     return None
 
+
 def query_layer_for_fids(layerName, fids):
     layer = layer_from_name(layerName)
     freq = QgsFeatureRequest()
     freq.setFilterFids(fids)
     return list(layer.getFeatures(freq))
 
+
 def get_fields(layerName):
     return layer_from_name(layerName).fields()
+
 
 def field_idx_from_name(layerName, fieldName):
     idx = layer_from_name(layerName).fieldNameIndex(fieldName)
@@ -49,7 +51,8 @@ def field_name_from_idx(layerName, idx):
 
 # configurable
 logTag = "OpenGIS"  # in which tab log messages appear
-Settings = namedtuple("Settings","excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions")
+Settings = namedtuple(
+    "Settings", "excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions")
 
 
 def showWarning(msg):
@@ -108,9 +111,11 @@ class Syncer(QObject):
         self.excelName = settings.excelName  # the layer name
         self.excelSheetName = settings.excelSheetName
         self.excelKeyName = settings.excelKeyName
-        self.excelFkIdx = field_idx_from_name(self.excelName, self.excelKeyName)
+        self.excelFkIdx = field_idx_from_name(
+            self.excelName, self.excelKeyName)
         self.excelPath = layer_from_name(self.excelName).publicSource()
-        self.excelKeyName = field_name_from_idx(self.excelName, self.excelFkIdx)
+        self.excelKeyName = field_name_from_idx(
+            self.excelName, self.excelFkIdx)
         # shpfile layer
         self.shpName = settings.shpName
         self.shpKeyName = settings.shpKeyName
@@ -121,7 +126,6 @@ class Syncer(QObject):
         self.clear_edit_state()
         self.initialSync()
 
-
     def join(self):
         # join the shp layer to the excel layer, non cached
         # TODO: Ignore if already joined?
@@ -131,15 +135,13 @@ class Syncer(QObject):
         jinfo.targetFieldName = self.shpKeyName
         jinfo.joinLayerId = layer_from_name(self.excelName).id()
         jinfo.memoryCache = False
-        jinfo.prefix=''
+        jinfo.prefix = ''
         for jinfo2 in shpLayer.vectorJoins():
-            if jinfo2==jinfo:
+            if jinfo2 == jinfo:
                 info("Join already exists. Will not create it again")
                 return
-        info("Adding join between master and slave layers") 
+        info("Adding join between master and slave layers")
         shpLayer.addJoin(jinfo)
-
-        
 
     def reload_excel(self):
         path = self.excelPath
@@ -152,27 +154,25 @@ class Syncer(QObject):
         layer.dataProvider().forceReload()
         show_message_bar("Excel reloaded from disk.")
 
-
     def excel_changed(self):
         info("Excel changed on disk - need to sync")
         self.reload_excel()
         self.update_shp_from_excel()
 
-
     def get_max_id(self):
         layer = layer_from_name(self.shpName)
         return layer.maximumValue(self.shpKeyIdx)
 
-    def renameIds(self,fidToId):
+    def renameIds(self, fidToId):
         layer = layer_from_name(self.shpName)
         layer.startEditing()
         feats = query_layer_for_fids(self.shpName, fidToId.keys())
         for f in feats:
-            res = layer.changeAttributeValue(f.id(), self.shpKeyIdx, fidToId[f.id()])
+            res = layer.changeAttributeValue(
+                f.id(), self.shpKeyIdx, fidToId[f.id()])
         layer.commitChanges()
 
-
-    def added_geom(self,layerId, feats):
+    def added_geom(self, layerId, feats):
         info("added feats " + str(feats))
         layer = layer_from_name(self.shpName)
         maxFk = self.get_max_id()
@@ -182,42 +182,37 @@ class Syncer(QObject):
 
         self.shpAdd = feats
 
-
-    def removed_geom_precommit(self,fids):
+    def removed_geom_precommit(self, fids):
         #info("Removed fids"+str(fids))
         fks_to_remove = get_fk_set(
             self.shpName, self.shpKeyName, skipFirst=0, fids=fids, useProvider=True)
         self.shpRemove = self.shpRemove.union(fks_to_remove)
         info("feat ids to remove" + str(self.shpRemove))
 
-
-    def changed_geom(self,layerId, geoms):
+    def changed_geom(self, layerId, geoms):
         fids = geoms.keys()
         feats = query_layer_for_fids(self.shpName, fids)
-        fks_to_change = get_fk_set(self.shpName, self.shpKeyName, skipFirst=0, fids=fids)
+        fks_to_change = get_fk_set(
+            self.shpName, self.shpKeyName, skipFirst=0, fids=fids)
         self.shpChange = {k: v for (k, v) in zip(fks_to_change, feats)}
         # info("changed"+str(shpChange))
 
-
     def get_ignore_indices(self):
-        return [field_idx_from_name(self.excelName,field) for field in self.s.expressions.keys()]
+        return [field_idx_from_name(self.excelName, field) for field in self.s.expressions.keys()]
 
-
-    def write_feature_to_excel(self,sheet, idx, feat):
+    def write_feature_to_excel(self, sheet, idx, feat):
         sheet.write(idx, self.excelFkIdx, feat[self.shpKeyName])
         for (fieldName, exp) in self.s.expressions.iteritems():
             fieldIdx = field_idx_from_name(self.excelName, fieldName)
             exp = QgsExpression(exp)
             sheet.write(idx, fieldIdx, exp.evaluate(feat))
 
-
-    def write_rowvals_to_excel(self,sheet, idx, vals, ignore=None):
+    def write_rowvals_to_excel(self, sheet, idx, vals, ignore=None):
         if ignore is None:
             ignore = []
         for i, v in enumerate(vals):
             if i not in ignore:
                 sheet.write(idx, i, v)
-
 
     def update_excel_programmatically(self):
 
@@ -247,7 +242,7 @@ class Syncer(QObject):
                 self.write_feature_to_excel(w_sheet, write_idx, shpf)
                 vals = r_sheet.row_values(row_index)
                 self.write_rowvals_to_excel(w_sheet, write_idx, vals,
-                                       ignore=self.get_ignore_indices())
+                                            ignore=self.get_ignore_indices())
             else:  # else just copy the row
                 vals = r_sheet.row_values(row_index)
                 self.write_rowvals_to_excel(w_sheet, write_idx, vals)
@@ -281,9 +276,9 @@ class Syncer(QObject):
         info("changing:" + str(self.shpChange))
         info("adding:" + str(self.shpAdd))
         info("removing" + str(self.shpRemove))
-        self.deactivateFileWatcher() # so that we don't sync back and forth
+        self.deactivateFileWatcher()  # so that we don't sync back and forth
         fidToId = self.update_excel_programmatically()
-        # need to alter the ids(not fids) of the new features after, because 
+        # need to alter the ids(not fids) of the new features after, because
         # editing the features after they've been commited doesn't work
         if fidToId:
             self.deactivateShpConnections()
@@ -293,8 +288,7 @@ class Syncer(QObject):
         self.activateFileWatcher()
         self.clear_edit_state()
 
-
-    def updateShpLayer(self,fksToRemove):
+    def updateShpLayer(self, fksToRemove):
         if not fksToRemove:
             return
 
@@ -313,7 +307,6 @@ class Syncer(QObject):
             layer.commitChanges()
         else:
             return
-
 
     def update_shp_from_excel(self):
         excelFks = Set(
@@ -335,7 +328,8 @@ class Syncer(QObject):
             warn("There are rows in the excel file with no matching geometry {}.".format(
                 inExcelButNotInShp))
             # FIXME: if those are added later then they will be added twice..
-            # However, having an autoincrement id suggests features would be added first from shp only?
+            # However, having an autoincrement id suggests features would be
+            # added first from shp only?
 
         if inShpButNotInExcel:
             self.updateShpLayer(inShpButNotInExcel)
@@ -359,7 +353,7 @@ class Syncer(QObject):
     def deactivateShpConnections(self):
         shpLayer = layer_from_name(self.shpName)
         shpLayer.committedFeaturesAdded.disconnect(self.added_geom)
-        #shpLayer.featureAdded.disconnect(added_geom_precommit)
+        # shpLayer.featureAdded.disconnect(added_geom_precommit)
         shpLayer.featuresDeleted.disconnect(self.removed_geom_precommit)
         shpLayer.committedGeometriesChanges.disconnect(self.changed_geom)
         shpLayer.editingStopped.disconnect(self.update_excel_from_shp)
