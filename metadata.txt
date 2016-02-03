@@ -12,12 +12,12 @@ qgisMinimumVersion=2.12
 description=description
 version=0.1
 author=OpenGis.ch
-email=email@address.com
+email=info@opengis.ch
 
-about=lorem ipsum
+about=Links an Excel (.xls) file to a Shapefile (or any other layer). For every row on the layer a row in the Excel file is created. Derived information like area or centroid can be added to the Excel row.
 
-tracker=ff
-repository=ff
+tracker=https://github.com/opengisch/shpsync/issues
+repository=https://github.com/opengisch/shpsync
 # End of mandatory metadata
 
 # Recommended items:
@@ -28,7 +28,7 @@ repository=ff
 # Tags are comma separated with spaces allowed
 tags=ff
 
-homepage=ff
+homepage=https://github.com/opengisch/shpsync
 category=Plugins
 icon=icon.png
 # experimental flag

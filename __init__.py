@@ -7,7 +7,7 @@
                              -------------------
         begin                : 2016-01-24
         copyright            : (C) 2016 by OpenGis.ch
-        email                : email@address.com
+        email                : info@opengis.ch
         git sha              : $Format:%H$
  ***************************************************************************/
 

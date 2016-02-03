@@ -6,7 +6,7 @@
 #		begin				: 2016-01-24
 #		git sha				: $Format:%H$
 #		copyright			: (C) 2016 by OpenGis.ch
-#		email				: email@address.com
+#		email				: info@opengis.ch
 # ***************************************************************************/
 #
 #/***************************************************************************
@@ -32,7 +32,7 @@ LOCALES = de
 # you have trouble compiling the translations, you may have to specify the full path to
 # lrelease
 #LRELEASE = lrelease
-#LRELEASE = lrelease-qt4
+LRELEASE = lrelease-qt4
 
 
 # translation
