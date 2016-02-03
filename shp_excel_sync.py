@@ -3,10 +3,6 @@ from collections import namedtuple
 import os
 import sys
 
-pluginpath = os.path.dirname(__file__)
-for file in os.listdir(pluginpath):
-    if file.endswith('.egg'):
-        sys.path.append(os.path.join(pluginpath, file))
 
 from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression
 from qgis.utils import iface

@@ -22,6 +22,13 @@
  This script initializes the plugin, making it known to QGIS.
 """
 
+import os
+import sys
+
+pluginpath = os.path.dirname(__file__)
+for file in os.listdir(pluginpath):
+    if file.endswith('.egg'):
+        sys.path.append(os.path.join(pluginpath, file))
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
