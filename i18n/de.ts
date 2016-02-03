@@ -9,43 +9,43 @@
     </message>
     <message>
         <source>Master Layer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauptebene</translation>
     </message>
     <message>
         <source>Master Key:</source>
-        <translation type="unfinished"></translation>
+        <translation>Identifikationsschlüssel Hauptebene</translation>
     </message>
     <message>
         <source>Excel Layer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Excelebene</translation>
     </message>
     <message>
         <source>Excel Key:</source>
-        <translation type="unfinished"></translation>
+        <translation>Identifikationsschlüssel Excelebene</translation>
     </message>
     <message>
         <source>Excel Sheet:</source>
-        <translation type="unfinished"></translation>
+        <translation>Excel Datenblatt</translation>
     </message>
     <message>
         <source>Skip lines:</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeilen überspringen</translation>
     </message>
     <message>
-        <source>                                   Derived fields</source>
-        <translation type="unfinished"></translation>
+        <source>Derived fields</source>
+        <translation>Berechnete Felder</translation>
     </message>
     <message>
         <source>Excel Field</source>
-        <translation type="unfinished"></translation>
+        <translation>Excel Feld</translation>
     </message>
     <message>
         <source>Expression on Shapefile</source>
-        <translation type="unfinished"></translation>
+        <translation>Ausdruck (auf Shapefile)</translation>
     </message>
     <message>
         <source>Add more derived fields</source>
-        <translation type="unfinished"></translation>
+        <translation>Mehr berechnete Felder hinzufügen</translation>
     </message>
 </context>
 </TS>
