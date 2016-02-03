@@ -74,6 +74,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
             self.updateComboBoxFromLayerAttributes(combo, self.slave.fields())
         if self.master is not None:
             fieldExp.setLayer(self.master)
+        combo.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
 
         del_btn.clicked.connect(self.removeExpressionWidget)
 
