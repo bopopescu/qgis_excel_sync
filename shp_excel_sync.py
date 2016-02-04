@@ -12,6 +12,9 @@ from xlrd import open_workbook
 import xlwt
 
 
+MSG_DURATION_SECS = 4
+
+
 def layer_from_name(layerName):
     # Important: If multiple layers with same name exist, it will return the
     # first one it finds
@@ -95,7 +98,7 @@ def show_message_bar(status_msgs):
         text = status_msgs
     else:
         text = '<br>'.join(status_msgs)
-    iface.messageBar().pushInfo(u'Message from {}'.format(logTag), text)
+    iface.messageBar().pushInfo(u'Message from {}'.format(logTag), text, duration=MSG_DURATION_SECS)
 
 
 class Syncer(QObject):
