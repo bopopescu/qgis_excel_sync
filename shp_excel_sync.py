@@ -310,10 +310,6 @@ class Syncer(QObject):
     def update_shp_from_excel(self):
         excelFks = Set(
             get_fk_set(self.excelName, self.excelKeyName, skipFirst=self.skipLines))
-        if not excelFks:
-            warn(
-                "Qgis thinks that the Excel file is empty. That probably means something went horribly wrong. Won't sync.")
-            return
         shpFks = Set(get_fk_set(self.shpName, self.shpKeyName, skipFirst=0))
         # TODO also special warning if shp layer is in edit mode
         info("Keys in excel" + str(excelFks))
