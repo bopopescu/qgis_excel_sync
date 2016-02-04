@@ -27,7 +27,10 @@ from PyQt4 import QtGui, uic
 from qgis.gui import QgsFieldExpressionWidget
 from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression
 
-from xlrd import open_workbook
+from xlrd import (
+    open_workbook,
+    XLRDError
+)
 
 import qgis_utils
 
@@ -144,8 +147,11 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         self.updateComboBoxFromLayerAttributes(
             self.comboBox_slave_key, attributes)
         # update sheet name suggestion
-        wb = open_workbook(layer.publicSource())
-        self.lineEdit_sheetName.setText(wb.sheet_names()[0])
+        try:
+            wb = open_workbook(layer.publicSource())
+            self.lineEdit_sheetName.setText(wb.sheet_names()[0])
+        except XLRDError:
+            pass
         # update fields in comboboxes
         for combo in self.combos:
             self.updateComboBoxFromLayerAttributes(combo, attributes)
