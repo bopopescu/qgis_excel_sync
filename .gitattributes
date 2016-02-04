@@ -1,0 +1,8 @@
+demodata       export-ignore
+Makefile       export-ignore
+pb_tool.cfg    export-ignore
+pylintrc       export-ignore
+shpsync.pro    export-ignore
+scripts        export-ignore
+.gitattributes export-ignore
+.gitignore     export-ignore
