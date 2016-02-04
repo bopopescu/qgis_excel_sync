@@ -38,7 +38,7 @@ class shpsync:
 
     def setUpSyncerTest(self, excelName, excelKeyName, shpName, shpKeyName):
         """Test the setup"""
-        exps = {"Flaeche_ha": "area( $geometry )", "FEE_Nr": "y( $geometry )"}
+        exps = {"Flaeche_ha": "area( $geometry )/10000", "FEE_Nr": "y( $geometry )"}
         s = Settings(excelName, "Tabelle1", excelKeyName,
                      1, shpName, shpKeyName, exps)
         self.syncer = Syncer(s)
@@ -197,7 +197,7 @@ class shpsync:
         self.dlg.buttonBox.rejected.connect(self.hideDialog)
         self.dlg.exps[0].setField("x($geometry)")
         self.dlg.exps[1].setField("y($geometry)")
-        self.dlg.exps[2].setField("area($geometry)")
+        self.dlg.exps[2].setField("area($geometry)/10000")
         self.dlg.show()
 
     def parseSettings(self):
