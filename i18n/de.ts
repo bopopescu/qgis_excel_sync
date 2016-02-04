@@ -39,12 +39,12 @@
     <message>
         <location filename="shpsync_dialog_base.ui" line="23"/>
         <source>Master Layer:</source>
-        <translation>Hauptebene</translation>
+        <translation>Geometrieebene</translation>
     </message>
     <message>
         <location filename="shpsync_dialog_base.ui" line="33"/>
         <source>Master Key:</source>
-        <translation>Identifikationsschlüssel Hauptebene</translation>
+        <translation>Identifikationsschlüssel Geometrieebene</translation>
     </message>
     <message>
         <location filename="shpsync_dialog_base.ui" line="43"/>
