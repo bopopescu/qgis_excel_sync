@@ -5,6 +5,7 @@ import sys
 
 
 from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression
+from qgis.gui import QgsMessageBar
 from qgis.utils import iface
 from PyQt4.QtCore import QFileSystemWatcher, QObject
 from PyQt4 import QtGui
@@ -98,7 +99,7 @@ def show_message_bar(status_msgs):
         text = status_msgs
     else:
         text = '<br>'.join(status_msgs)
-    iface.messageBar().pushInfo(u'Message from {}'.format(logTag), text, duration=MSG_DURATION_SECS)
+    iface.messageBar().pushMessage(u'Message from {}'.format(logTag), text, QgsMessageBar.INFO, MSG_DURATION_SECS)
 
 
 class Syncer(QObject):
