@@ -65,9 +65,13 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
 
         self.populate(self.comboBox_master, isMaster=True, idx=master_idx)
         self.comboBox_master.setCurrentIndex(master_idx)
+        self.comboBox_master.setEnabled(False)
+        self.comboBox_master_key.setEnabled(False)
         self.populate(self.comboBox_master, isMaster=True, idx=master_idx)
         self.populate(self.comboBox_slave, isMaster=False, idx=slave_idx)
         self.comboBox_slave.setCurrentIndex(slave_idx)
+        self.comboBox_slave.setEnabled(False)
+        self.comboBox_slave_key.setEnabled(False)
         self.lineEdit_sheetName.setText(settings.excelSheetName)
         self.spinBox.setValue(settings.skipLines)
         self.comboBox_slave_key.setCurrentIndex(self.comboBox_slave_key.findText(settings.excelKeyName))
