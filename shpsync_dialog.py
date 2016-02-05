@@ -24,6 +24,7 @@
 import os
 
 from PyQt4 import QtGui, uic
+from PyQt4.QtCore import Qt
 from qgis.gui import QgsFieldExpressionWidget
 from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression
 
@@ -76,6 +77,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         self.spinBox.setValue(settings.skipLines)
         self.comboBox_slave_key.setCurrentIndex(self.comboBox_slave_key.findText(settings.excelKeyName))
         self.comboBox_master_key.setCurrentIndex(self.comboBox_master_key.findText(settings.shpKeyName))
+        self.checkBox.setCheckState(Qt.Checked if settings.hideDialog else Qt.Unchecked)
 
         for k, v in settings.expressions.iteritems():
             self.addExpressionWidget()

@@ -102,6 +102,7 @@ class shpsync:
         metasettings["shpKeyName"] = str
         metasettings["shpName"] = str
         metasettings["expressions"] = list
+        metasettings["hideDialog"] = str
         settings_dict = ProjectHandler.readSettings("SHPSYNC", metasettings)
         if not settings_dict:
             return
@@ -219,8 +220,9 @@ class shpsync:
         shpKeyName = self.dlg.comboBox_master_key.currentText()
         excelSheetName = self.dlg.lineEdit_sheetName.text()
         skipLines = self.dlg.spinBox.value()
+        hideDialog = self.dlg.checkBox.isChecked()
         s = Settings(excelName, excelSheetName, excelKeyName,
-                     skipLines, shpName, shpKeyName, exps)
+                     skipLines, shpName, shpKeyName, exps, hideDialog)
         self.initSyncer(s)
         self.hideDialog()
 

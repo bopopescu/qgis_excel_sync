@@ -4,7 +4,7 @@ import os
 import sys
 
 
-from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression
+from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression, QgsVectorLayer
 from qgis.gui import QgsMessageBar
 from qgis.utils import iface
 from PyQt4.QtCore import QFileSystemWatcher, QObject
@@ -52,7 +52,7 @@ def field_name_from_idx(layerName, idx):
 # configurable
 logTag = "OpenGIS"  # in which tab log messages appear
 Settings = namedtuple(
-    "Settings", "excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions")
+    "Settings", "excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions hideDialog")
 
 
 def showWarning(msg):
@@ -121,6 +121,7 @@ class Syncer(QObject):
         self.shpKeyName = settings.shpKeyName
         self.shpKeyIdx = field_idx_from_name(self.shpName, self.shpKeyName)
         self.skipLines = settings.skipLines
+        layer_from_name(self.shpName).setFeatureFormSuppress(QgsVectorLayer.SuppressOn if settings.hideDialog else QgsVectorLayer.SuppressOff)
 
         self.join()
         self.clear_edit_state()
