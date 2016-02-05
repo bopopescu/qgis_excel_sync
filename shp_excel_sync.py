@@ -161,8 +161,15 @@ class Syncer(QObject):
         self.update_shp_from_excel()
 
     def get_max_id(self):
+    
         layer = layer_from_name(self.shpName)
-        return layer.maximumValue(self.shpKeyIdx)
+        if layer.dataProvider().featureCount() == 0:
+            return 0
+        maxVal = layer.maximumValue(self.shpKeyIdx)
+        if maxVal == None:
+            return 0
+        else:
+            return maxVal
 
     def renameIds(self, fidToId):
         layer = layer_from_name(self.shpName)
