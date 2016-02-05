@@ -59,21 +59,21 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         self.populate(self.comboBox_slave, isMaster=False)
         self.pushButton.clicked.connect(self.addExpressionWidget)
 
-    def restoreSettings(self,settings):
+    def restoreSettings(self, settings):
         master_idx = self.comboBox_master.findText(settings.shpName)
         slave_idx = self.comboBox_slave.findText(settings.excelName)
 
         self.populate(self.comboBox_master, isMaster=True, idx=master_idx)
         self.comboBox_master.setCurrentIndex(master_idx)
         self.populate(self.comboBox_master, isMaster=True, idx=master_idx)
-        self.populate(self.comboBox_slave, isMaster=False, idx=slave_idx )
+        self.populate(self.comboBox_slave, isMaster=False, idx=slave_idx)
         self.comboBox_slave.setCurrentIndex(slave_idx)
         self.lineEdit_sheetName.setText(settings.excelSheetName)
         self.spinBox.setValue(settings.skipLines)
         self.comboBox_slave_key.setCurrentIndex(self.comboBox_slave_key.findText(settings.excelKeyName))
         self.comboBox_master_key.setCurrentIndex(self.comboBox_master_key.findText(settings.shpKeyName))
 
-        for k,v in settings.expressions.iteritems():
+        for k, v in settings.expressions.iteritems():
             self.addExpressionWidget()
             self.exps[-1].setLayer(self.master)
             self.exps[-1].setField(v)

@@ -89,7 +89,7 @@ class shpsync:
 
     def reset(self):
         del self.syncer
-        self.syncer=None
+        self.syncer = None
 
     def readSettings(self):
         # "Settings","excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions")
