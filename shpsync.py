@@ -95,14 +95,14 @@ class shpsync:
         # "Settings","excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions")
         self.reset()
         metasettings = OrderedDict()
-        metasettings["excelName"] = str
-        metasettings["excelSheetName"] = str
-        metasettings["excelKeyName"] = str
-        metasettings["skipLines"] = int
-        metasettings["shpKeyName"] = str
-        metasettings["shpName"] = str
-        metasettings["expressions"] = list
-        metasettings["hideDialog"] = str
+        metasettings["excelName"] = (str, None)
+        metasettings["excelSheetName"] = (str, None)
+        metasettings["excelKeyName"] = (str, None)
+        metasettings["skipLines"] = (int, None)
+        metasettings["shpKeyName"] = (str, None)
+        metasettings["shpName"] = (str, None)
+        metasettings["expressions"] = (list, [])
+        metasettings["hideDialog"] = (bool, False)
         settings_dict = ProjectHandler.readSettings("SHPSYNC", metasettings)
         if not settings_dict:
             return
@@ -113,7 +113,8 @@ class shpsync:
                 kv = exp.split(":::")
                 exps_dict[kv[0]] = kv[1]
             settings = Settings(settings_dict["excelName"], settings_dict["excelSheetName"], settings_dict["excelKeyName"],
-                                settings_dict["skipLines"], settings_dict["shpName"], settings_dict["shpKeyName"], exps_dict)
+                                settings_dict["skipLines"], settings_dict["shpName"], settings_dict["shpKeyName"],
+                                exps_dict, settings_dict['hideDialog'])
             self.initSyncer(settings)
 
     def writeSettings(self, doc):

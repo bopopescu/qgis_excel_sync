@@ -47,14 +47,18 @@ class ProjectHandler(QObject):
             list: prj.readListEntry,
         }
 
+
         settings = {}
-        for (setting_name, type) in metasettings.items():
+        for setting_name, (type, default) in metasettings.items():
 
             try:
                 setting_value = cls.readSetting(
                     tag, setting_name, type_to_read_function_mapping[type])
                 if setting_value is None:
-                    raise Exception
+                    if default is not None:
+                        setting_value = default
+                    else:
+                        raise Exception
                 settings[setting_name] = setting_value
             except:
                 pass
