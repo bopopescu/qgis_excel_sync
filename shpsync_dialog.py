@@ -55,12 +55,29 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         self.hors = []
         self.slave = None
         self.master = None
-        self.addExpressionWidget()
-        self.addExpressionWidget()
-        self.addExpressionWidget()
         self.populate(self.comboBox_master, isMaster=True)
         self.populate(self.comboBox_slave, isMaster=False)
         self.pushButton.clicked.connect(self.addExpressionWidget)
+
+    def restoreSettings(self,settings):
+        master_idx = self.comboBox_master.findText(settings.shpName)
+        slave_idx = self.comboBox_slave.findText(settings.excelName)
+
+        self.populate(self.comboBox_master, isMaster=True, idx=master_idx)
+        self.comboBox_master.setCurrentIndex(master_idx)
+        self.populate(self.comboBox_master, isMaster=True, idx=master_idx)
+        self.populate(self.comboBox_slave, isMaster=False, idx=slave_idx )
+        self.comboBox_slave.setCurrentIndex(slave_idx)
+        self.lineEdit_sheetName.setText(settings.excelSheetName)
+        self.spinBox.setValue(settings.skipLines)
+        self.comboBox_slave_key.setCurrentIndex(self.comboBox_slave_key.findText(settings.excelKeyName))
+        self.comboBox_master_key.setCurrentIndex(self.comboBox_master_key.findText(settings.shpKeyName))
+
+        for k,v in settings.expressions.iteritems():
+            self.addExpressionWidget()
+            self.exps[-1].setLayer(self.master)
+            self.exps[-1].setField(v)
+            self.combos[-1].setCurrentIndex(self.combos[-1].findText(k))
 
     def addExpressionWidget(self):
         hor = QtGui.QHBoxLayout()
@@ -88,6 +105,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
 
     def getExpressionsDict(self):
         res = {}
+
         for exp, combo in zip(self.exps, self.combos):
             res[combo.currentText()] = exp.currentText()
         return res
@@ -105,17 +123,20 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         del self.exps[idx]
         del self.hors[idx]
 
-    def populate(self, comboBox, isMaster):
+    def populate(self, comboBox, isMaster, idx=0, update=True):
         idlayers = list(QgsMapLayerRegistry.instance().mapLayers().iteritems())
         self.populateFromLayers(comboBox, idlayers, isMaster)
         if not idlayers:
             return
+        if not update:
+            return
         if isMaster:
-            self.masterUpdated(0)
+            self.masterUpdated(idx)
         else:
-            self.slaveUpdated(0)
+            self.slaveUpdated(idx)
 
     def populateFromLayers(self, comboBox, idlayers, isMaster):
+        comboBox.clear()
         for (id, layer) in idlayers:
             unicode_name = unicode(layer.name())
             comboBox.addItem(unicode_name, id)
@@ -132,16 +153,22 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
 
     def masterUpdated(self, idx):
         layer = qgis_utils.getLayerFromId(self.comboBox_master.itemData(idx))
+        if layer is None:
+            return
         self.master = layer
         attributes = layer.fields()
         self.updateComboBoxFromLayerAttributes(
             self.comboBox_master_key, attributes)
         # update layer in expressions
         for exp in self.exps:
+            text = exp.currentText()
             exp.setLayer(layer)
+            exp.setField(text)
 
     def slaveUpdated(self, idx):
         layer = qgis_utils.getLayerFromId(self.comboBox_slave.itemData(idx))
+        if layer is None:
+            return
         self.slave = layer
         attributes = layer.fields()
         self.updateComboBoxFromLayerAttributes(

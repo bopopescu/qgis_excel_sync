@@ -83,11 +83,17 @@ class shpsync:
     def initProject(self):
         """ initialize project related connections """
         self.iface.projectRead.connect(self.readSettings)
+        self.iface.newProjectCreated.connect(self.reset)
         QObject.connect(QgsProject.instance(), SIGNAL("writeProject(QDomDocument &)"),
                         self.writeSettings)
 
+    def reset(self):
+        del self.syncer
+        self.syncer=None
+
     def readSettings(self):
         # "Settings","excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions")
+        self.reset()
         metasettings = OrderedDict()
         metasettings["excelName"] = str
         metasettings["excelSheetName"] = str
@@ -195,9 +201,14 @@ class shpsync:
         self.dlg = shpsyncDialog()
         self.dlg.buttonBox.accepted.connect(self.parseSettings)
         self.dlg.buttonBox.rejected.connect(self.hideDialog)
-        self.dlg.exps[0].setField("x($geometry)")
-        self.dlg.exps[1].setField("y($geometry)")
-        self.dlg.exps[2].setField("area($geometry)/10000")
+        if self.syncer is None:
+            for i in range(3):
+                self.dlg.addExpressionWidget()
+            self.dlg.exps[0].setField("x($geometry)")
+            self.dlg.exps[1].setField("y($geometry)")
+            self.dlg.exps[2].setField("area($geometry)/10000")
+        else:
+            self.dlg.restoreSettings(self.syncer.s)
         self.dlg.show()
 
     def parseSettings(self):
