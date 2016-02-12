@@ -104,7 +104,7 @@ class shpsync:
         metasettings["expressions"] = (list, [])
         metasettings["hideDialog"] = (bool, False)
         settings_dict = ProjectHandler.readSettings("SHPSYNC", metasettings)
-        if not settings_dict:
+        if "excelName" not in settings_dict:
             return
         else:
             exps = settings_dict["expressions"]
