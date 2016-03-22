@@ -102,7 +102,6 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
             self.updateComboBoxFromLayerAttributes(combo, self.slave.fields())
         if self.master is not None:
             fieldExp.setLayer(self.master)
-        combo.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
 
         del_btn.clicked.connect(self.removeExpressionWidget)
 
@@ -157,6 +156,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         comboBox.clear()
         for attr in attrs:
             comboBox.addItem(attr.name())
+        comboBox.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
 
     def masterUpdated(self, idx):
         layer = qgis_utils.getLayerFromId(self.comboBox_master.itemData(idx))
