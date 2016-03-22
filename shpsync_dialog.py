@@ -24,7 +24,7 @@
 import os
 
 from PyQt4 import QtGui, uic
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import Qt, QSize
 from qgis.gui import QgsFieldExpressionWidget
 from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression
 
@@ -156,6 +156,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         comboBox.clear()
         for attr in attrs:
             comboBox.addItem(attr.name())
+        comboBox.setMinimumSize(QSize(150, 0))
         comboBox.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
 
     def masterUpdated(self, idx):
