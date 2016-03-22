@@ -132,6 +132,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
     def populate(self, comboBox, isMaster, idx=0, update=True):
         idlayers = list(QgsMapLayerRegistry.instance().mapLayers().iteritems())
         self.populateFromLayers(comboBox, idlayers, isMaster)
+        comboBox.setCurrentIndex(idx)
         if not idlayers:
             return
         if not update:
