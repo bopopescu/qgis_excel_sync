@@ -26,7 +26,15 @@ import os
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, QSize
 from qgis.gui import QgsFieldExpressionWidget
-from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression
+from qgis.core import (
+        QgsMessageLog,
+        QgsMapLayerRegistry,
+        QgsFeatureRequest,
+        QgsFeature,
+        QgsVectorJoinInfo,
+        QgsExpression,
+        QgsMapLayer
+)
 
 from xlrd import (
     open_workbook,
@@ -144,8 +152,9 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
     def populateFromLayers(self, comboBox, idlayers, isMaster):
         comboBox.clear()
         for (id, layer) in idlayers:
-            unicode_name = unicode(layer.name())
-            comboBox.addItem(unicode_name, id)
+            if layer.type() == QgsMapLayer.VectorLayer:
+                unicode_name = unicode(layer.name())
+                comboBox.addItem(unicode_name, id)
 
         if isMaster:
             comboBox.currentIndexChanged.connect(self.masterUpdated)
