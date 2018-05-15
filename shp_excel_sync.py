@@ -184,11 +184,10 @@ class Syncer(QObject):
         info("added feats " + str(feats))
         layer = layer_from_name(self.shpName)
         maxFk = self.get_max_id()
-        for i, _ in enumerate(feats):
+        for i, new_feat in enumerate(layer.getFeatures(QgsFeatureRequest().setFilterFids([f.id() for f in feats]))):
             _id = maxFk + i + 1
-            feats[i].setAttribute(self.shpKeyName, _id)
-
-        self.shpAdd = feats
+            new_feat.setAttribute(self.shpKeyName, _id)
+            self.shpAdd.append(new_feat)
 
     def removed_geom_precommit(self, fids):
         #info("Removed fids"+str(fids))
