@@ -10,7 +10,7 @@
 name=ShpSync
 qgisMinimumVersion=2.12
 description=description
-version=1.1
+version=1.2
 author=OPENGIS.ch, carolinux
 email=info@opengis.ch
 
