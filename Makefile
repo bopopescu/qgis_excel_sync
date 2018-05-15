@@ -38,17 +38,22 @@ LRELEASE = lrelease-qt4
 # translation
 SOURCES = \
 	__init__.py \
-	shpsync.py shpsync_dialog.py
+	shpsync.py \
+	shpsync_dialog.py
 
 PLUGINNAME = shpsync
 
 PY_FILES = \
 	__init__.py \
-	shpsync.py shpsync_dialog.py
+	shpsync.py \
+	shpsync_dialog.py
 
 UI_FILES = shpsync_dialog_base.ui
 
-EXTRAS = metadata.txt icon.png
+EXTRAS = metadata.txt \
+	 icon.png \
+	 xlwt-1.0.0-py2.7.egg \
+	 xlrd-0.9.4-py2.7.egg
 
 COMPILED_RESOURCE_FILES = resources.py
 
