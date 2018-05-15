@@ -184,10 +184,8 @@ class Syncer(QObject):
         info("added feats " + str(feats))
         layer = layer_from_name(self.shpName)
         maxFk = self.get_max_id()
-        for i, _ in enumerate(feats):
+        for i, new_feat in enumerate(layer.getFeatures(QgsFeatureRequest().setFilterFids([f.id() for f in feats]))):
             _id = maxFk + i + 1
-            new_feat = QgsFeature()
-            layer.getFeatures(QgsFeatureRequest(feats[i].id())).nextFeature(new_feat)
             new_feat.setAttribute(self.shpKeyName, _id)
             self.shpAdd.append(new_feat)
 
