@@ -39,14 +39,17 @@ LRELEASE = lrelease-qt4
 SOURCES = \
 	__init__.py \
 	shpsync.py \
-	shpsync_dialog.py
+	shpsync_dialog.py \
+	shp_excel_sync.py
 
 PLUGINNAME = shpsync
 
 PY_FILES = \
 	__init__.py \
 	shpsync.py \
-	shpsync_dialog.py
+	shpsync_dialog.py \
+	shp_excel_sync.py
+
 
 UI_FILES = shpsync_dialog_base.ui
 
