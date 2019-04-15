@@ -1,9 +1,5 @@
-from qgis.core import QgsRasterLayer
-from qgis.utils import QGis
-
-from PyQt4.QtGui import QColor
-from PyQt4.QtCore import QVariant
-from qgis._core import QgsMapLayerRegistry
+from qgis.core import QgsRasterLayer, Qgis
+from qgis._core import QgsProject
 
 from logging import warn
 
@@ -21,14 +17,14 @@ def getAllJoinIdsOfLayer(layer):
 
 
 def getVersion():
-    return QGis.QGIS_VERSION_INT
+    return Qgis.QGIS_VERSION_INT
 
 
 def getAllJoinedLayers(layerIds):
     """get the ids of the layers that are joined on the given layerIds"""
     allJoined = set()
-    allLayers = QgsMapLayerRegistry.instance().mapLayers()
-    for (id, layer) in allLayers.iteritems():
+    allLayers = QgsProject.instance().mapLayers()
+    for (id, layer) in allLayers.items():
         if isRaster(layer):
             continue
         if id in layerIds:  # let's see what the given layers are joined on
@@ -43,7 +39,7 @@ def getAllJoinedLayers(layerIds):
 
 def getLayerAttributes(layerId):
     try:
-        layer = QgsMapLayerRegistry.instance().mapLayers()[layerId]
+        layer = QgsProject.instance().mapLayers()[layerId]
         fieldmap = layer.pendingFields()
         return fieldmap
     except:
@@ -54,7 +50,7 @@ def getLayerAttributes(layerId):
 
 def getAllLayerIds(filter_func):
     res = []
-    for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+    for (id, layer) in QgsProject.instance().mapLayers().items():
         if filter_func(layer):
             res.append(id)
     return res
@@ -62,7 +58,7 @@ def getAllLayerIds(filter_func):
 
 def getLayerFromId(layerId):
     try:
-        layer = QgsMapLayerRegistry.instance().mapLayers()[layerId]
+        layer = QgsProject.instance().mapLayers()[layerId]
         return layer
     except:
         warn("Could not get layer for id {}".format(layerId))
@@ -80,8 +76,8 @@ def doesLayerNameExist(name):
 def getIdFromLayerName(layerName):
     # Important: If multiple layers with same name exist, it will return the
     # first one it finds
-    for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
-        if unicode(layer.name()) == layerName:
+    for (id, layer) in QgsProject.instance().mapLayers().items():
+        if layer.name() == layerName:
             return id
     return None
 
@@ -89,12 +85,12 @@ def getIdFromLayerName(layerName):
 def getLayerFromLayerName(layerName):
     # Important: If multiple layers with same name exist, it will return the
     # first one it finds
-    for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
-        if unicode(layer.name()) == layerName:
+    for (id, layer) in QgsProject.instance().mapLayers().items():
+        if layer.name() == layerName:
             return layer
     return None
 
 
 def getNameFromLayerId(layerId):
-    layer = QgsMapLayerRegistry.instance().mapLayers()[layerId]
-    return unicode(layer.name())
+    layer = QgsProject.instance().mapLayers()[layerId]
+    return layer.name()

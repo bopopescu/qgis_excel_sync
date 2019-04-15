@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import *
-
-from PyQt4.QtCore import *
+from qgis.core import QgsProject
+from qgis.PyQt.QtCore import QObject
 
 
 class ProjectHandler(QObject):
     """This class manages reading from and writing to the QgsProject instance.
     It's not aware of the context of the variables written/read.
-    Variables read from a file have to be put into context by the calling class."""
+    Variables read from a file have to be put into context by the calling
+    class."""
 
     @classmethod
     def writeSettings(cls, tag, settings):
@@ -33,8 +33,8 @@ class ProjectHandler(QObject):
     @classmethod
     def readSettings(cls, tag, metasettings):
         """read plugin settings from QgsProject instance
-        :param settings: a dictionary of setting names mapped to the expected type
-        """
+        :param settings: a dictionary of setting names mapped to the expected
+        type"""
         prj = QgsProject.instance()
 
         # use QProjects functions to extract the settings from the project XML
@@ -42,11 +42,9 @@ class ProjectHandler(QObject):
             str: prj.readEntry,
             int: prj.readNumEntry,
             float: prj.readDoubleEntry,
-            long: prj.readDoubleEntry,
             bool: prj.readBoolEntry,
             list: prj.readListEntry,
         }
-
 
         settings = {}
         for setting_name, (type, default) in metasettings.items():

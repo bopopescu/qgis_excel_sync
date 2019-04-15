@@ -1,14 +1,14 @@
-from sets import Set
-from collections import namedtuple
 import os
-import sys
 
+from collections import namedtuple
 
-from qgis._core import QgsMessageLog, QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsVectorJoinInfo, QgsExpression, QgsVectorLayer
-from qgis.gui import QgsMessageBar
+from qgis._core import (
+    QgsMessageLog, QgsProject, QgsFeatureRequest, QgsEditFormConfig,
+    QgsVectorLayerJoinInfo, QgsExpression, Qgis)
 from qgis.utils import iface
-from PyQt4.QtCore import QFileSystemWatcher, QObject
-from PyQt4 import QtGui
+
+from qgis.PyQt.QtCore import QFileSystemWatcher, QObject
+from qgis.PyQt.QtWidgets import QMessageBox
 from xlrd import open_workbook
 import xlwt
 
@@ -19,8 +19,8 @@ MSG_DURATION_SECS = 4
 def layer_from_name(layerName):
     # Important: If multiple layers with same name exist, it will return the
     # first one it finds
-    for (id, layer) in QgsMapLayerRegistry.instance().mapLayers().iteritems():
-        if unicode(layer.name()) == layerName:
+    for (id, layer) in QgsProject.instance().mapLayers().items():
+        if layer.name() == layerName:
             return layer
     return None
 
@@ -37,7 +37,7 @@ def get_fields(layerName):
 
 
 def field_idx_from_name(layerName, fieldName):
-    idx = layer_from_name(layerName).fieldNameIndex(fieldName)
+    idx = layer_from_name(layerName).fields().indexFromName(fieldName)
     if idx != -1:
         return idx
     else:
@@ -49,14 +49,17 @@ def field_name_from_idx(layerName, idx):
     fields = get_fields(layerName)
     return fields.at(idx).name()
 
+
 # configurable
 logTag = "OpenGIS"  # in which tab log messages appear
 Settings = namedtuple(
-    "Settings", "excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions hideDialog")
+    "Settings",
+    "excelName excelSheetName excelKeyName skipLines shpName shpKeyName \
+    expressions hideDialog")
 
 
 def showWarning(msg):
-    QtGui.QMessageBox.information(iface.mainWindow(), 'Warning', msg)
+    QMessageBox.information(iface.mainWindow(), 'Warning', msg)
 
 
 def get_fk_set(layerName, fkName, skipFirst=1, fids=None, useProvider=False):
@@ -74,7 +77,7 @@ def get_fk_set(layerName, fkName, skipFirst=1, fids=None, useProvider=False):
     fkSet = []
     for f in feats[skipFirst:]:
         QgsMessageLog.logMessage(
-            'FK {}'.format(f.attribute(fkName)), logTag, QgsMessageLog.CRITICAL)
+            'FK {}'.format(f.attribute(fkName)), logTag, Qgis.Critical)
         fk = f.attribute(fkName)
         if fk:  # Skip NULL ids that may be reported from excel files
             fkSet.append(fk)
@@ -82,7 +85,7 @@ def get_fk_set(layerName, fkName, skipFirst=1, fids=None, useProvider=False):
 
 
 def info(msg):
-    QgsMessageLog.logMessage(str(msg), logTag, QgsMessageLog.INFO)
+    QgsMessageLog.logMessage(str(msg), logTag, Qgis.Info)
 
 
 def warn(msg):
@@ -91,7 +94,7 @@ def warn(msg):
 
 
 def error(msg):
-    QgsMessageLog.logMessage(str(msg), logTag, QgsMessageLog.CRITICAL)
+    QgsMessageLog.logMessage(str(msg), logTag, Qgis.Critical)
 
 
 def show_message_bar(status_msgs):
@@ -99,7 +102,9 @@ def show_message_bar(status_msgs):
         text = status_msgs
     else:
         text = '<br>'.join(status_msgs)
-    iface.messageBar().pushMessage(u'Message from {}'.format(logTag), text, QgsMessageBar.INFO, MSG_DURATION_SECS)
+    iface.messageBar().pushMessage(
+        u'Message from {}'.format(logTag), text,
+        Qgis.Info, MSG_DURATION_SECS)
 
 
 class Syncer(QObject):
@@ -121,7 +126,13 @@ class Syncer(QObject):
         self.shpKeyName = settings.shpKeyName
         self.shpKeyIdx = field_idx_from_name(self.shpName, self.shpKeyName)
         self.skipLines = settings.skipLines
-        layer_from_name(self.shpName).setFeatureFormSuppress(QgsVectorLayer.SuppressOn if settings.hideDialog else QgsVectorLayer.SuppressOff)
+
+        layer = layer_from_name(self.shpName)
+        editFormConfig = layer.editFormConfig()
+        editFormConfig.setSuppress(
+            QgsEditFormConfig.SuppressOn if settings.hideDialog else
+            QgsEditFormConfig.SuppressOff)
+        layer.setEditFormConfig(editFormConfig)
 
         self.join()
         self.clear_edit_state()
@@ -131,12 +142,12 @@ class Syncer(QObject):
         # join the shp layer to the excel layer, non cached
         # TODO: Ignore if already joined?
         shpLayer = layer_from_name(self.shpName)
-        jinfo = QgsVectorJoinInfo()
-        jinfo.joinFieldName = self.excelKeyName
-        jinfo.targetFieldName = self.shpKeyName
-        jinfo.joinLayerId = layer_from_name(self.excelName).id()
-        jinfo.memoryCache = False
-        jinfo.prefix = ''
+        jinfo = QgsVectorLayerJoinInfo()
+        jinfo.setJoinFieldName(self.excelKeyName)
+        jinfo.setTargetFieldName(self.shpKeyName)
+        jinfo.setJoinLayerId(layer_from_name(self.excelName).id())
+        jinfo.setUsingMemoryCache(False)
+        jinfo.setPrefix('')
         for jinfo2 in shpLayer.vectorJoins():
             if jinfo2 == jinfo:
                 info("Join already exists. Will not create it again")
@@ -161,7 +172,7 @@ class Syncer(QObject):
         self.update_shp_from_excel()
 
     def get_max_id(self):
-    
+
         layer = layer_from_name(self.shpName)
         if layer.dataProvider().featureCount() == 0:
             return 0
@@ -184,15 +195,19 @@ class Syncer(QObject):
         info("added feats " + str(feats))
         layer = layer_from_name(self.shpName)
         maxFk = self.get_max_id()
-        for i, new_feat in enumerate(layer.getFeatures(QgsFeatureRequest().setFilterFids([f.id() for f in feats]))):
+        for i, new_feat in enumerate(
+                layer.getFeatures(
+                    QgsFeatureRequest().setFilterFids(
+                        [f.id() for f in feats]))):
             _id = maxFk + i + 1
             new_feat.setAttribute(self.shpKeyName, _id)
             self.shpAdd.append(new_feat)
 
     def removed_geom_precommit(self, fids):
-        #info("Removed fids"+str(fids))
+        # info("Removed fids"+str(fids))
         fks_to_remove = get_fk_set(
-            self.shpName, self.shpKeyName, skipFirst=0, fids=fids, useProvider=True)
+            self.shpName, self.shpKeyName, skipFirst=0, fids=fids,
+            useProvider=True)
         self.shpRemove = self.shpRemove.union(fks_to_remove)
         info("feat ids to remove" + str(self.shpRemove))
 
@@ -205,11 +220,12 @@ class Syncer(QObject):
         # info("changed"+str(shpChange))
 
     def get_ignore_indices(self):
-        return [field_idx_from_name(self.excelName, field) for field in self.s.expressions.keys()]
+        return [field_idx_from_name(
+            self.excelName, field) for field in self.s.expressions.keys()]
 
     def write_feature_to_excel(self, sheet, idx, feat):
         sheet.write(idx, self.excelFkIdx, feat[self.shpKeyName])
-        for (fieldName, exp) in self.s.expressions.iteritems():
+        for (fieldName, exp) in self.s.expressions.items():
             fieldIdx = field_idx_from_name(self.excelName, fieldName)
             exp = QgsExpression(exp)
             sheet.write(idx, fieldIdx, exp.evaluate(feat))
@@ -259,7 +275,8 @@ class Syncer(QObject):
         fidToId = {}
         for shpf in self.shpAdd:
             status_msgs.append(
-                "Adding new feature with id {}".format(shpf.attribute(self.shpKeyName)))
+                "Adding new feature with id {}".format(
+                    shpf.attribute(self.shpKeyName)))
             fidToId[shpf.id()] = shpf.attribute(self.shpKeyName)
             self.write_feature_to_excel(w_sheet, write_idx, shpf)
             write_idx += 1
@@ -276,7 +293,7 @@ class Syncer(QObject):
         info("Clearing edit state")
         self.shpAdd = []
         self.shpChange = {}
-        self.shpRemove = Set([])
+        self.shpRemove = set([])
 
     def update_excel_from_shp(self):
         info("Will now update excel from edited shapefile")
@@ -301,10 +318,11 @@ class Syncer(QObject):
 
         prompt_msg = "Attempt to synchronize between Excel and Shapefile. Shapefile has features with ids: ({}) that don't appear in the Excel. Delete those features from the shapefile? ".format(
             ','.join([str(fk) for fk in fksToRemove]))
-        reply = QtGui.QMessageBox.question(iface.mainWindow(), 'Message',
-                                           prompt_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        reply = QMessageBox.question(
+            iface.mainWindow(), 'Message',
+            prompt_msg, QMessageBox.Yes, QMessageBox.No)
 
-        if reply == QtGui.QMessageBox.Yes:
+        if reply == QMessageBox.Yes:
             layer = layer_from_name(self.shpName)
             feats = [f for f in layer.getFeatures()]
             layer.startEditing()
@@ -316,9 +334,9 @@ class Syncer(QObject):
             return
 
     def update_shp_from_excel(self):
-        excelFks = Set(
-            get_fk_set(self.excelName, self.excelKeyName, skipFirst=self.skipLines))
-        shpFks = Set(get_fk_set(self.shpName, self.shpKeyName, skipFirst=0))
+        excelFks = set(get_fk_set(
+            self.excelName, self.excelKeyName, skipFirst=self.skipLines))
+        shpFks = set(get_fk_set(self.shpName, self.shpKeyName, skipFirst=0))
         # TODO also special warning if shp layer is in edit mode
         info("Keys in excel" + str(excelFks))
         info("Keys in shp" + str(shpFks))
