@@ -4,10 +4,10 @@ from collections import namedtuple
 
 from qgis.core import (
     QgsMessageLog, QgsProject, QgsFeatureRequest, QgsEditFormConfig,
-    QgsVectorLayerJoinInfo, QgsExpression, Qgis)
+    QgsVectorLayerJoinInfo, QgsExpression, QgsExpressionContext, Qgis)
 from qgis.utils import iface
 
-from qgis.PyQt.QtCore import QFileSystemWatcher, QObject
+from qgis.PyQt.QtCore import QFileSystemWatcher, QObject, QVariant
 from qgis.PyQt.QtWidgets import QMessageBox
 from xlrd import open_workbook
 import xlwt
@@ -28,7 +28,7 @@ def layer_from_name(layerName):
 def query_layer_for_fids(layerName, fids):
     layer = layer_from_name(layerName)
     freq = QgsFeatureRequest()
-    freq.setFilterFids(fids)
+    freq.setFilterFids(list(fids))
     return list(layer.getFeatures(freq))
 
 
@@ -178,6 +178,8 @@ class Syncer(QObject):
         maxVal = layer.maximumValue(self.shpKeyIdx)
         if maxVal is None:
             return 0
+        elif type(maxVal) == QVariant and maxVal.isNull():
+            return 0
         else:
             return maxVal
 
@@ -227,7 +229,9 @@ class Syncer(QObject):
         for (fieldName, exp) in self.s.expressions.items():
             fieldIdx = field_idx_from_name(self.excelName, fieldName)
             exp = QgsExpression(exp)
-            sheet.write(idx, fieldIdx, exp.evaluate(feat))
+            context = QgsExpressionContext()
+            context.setFeature(feat)
+            sheet.write(idx, fieldIdx, exp.evaluate(context))
 
     def write_rowvals_to_excel(self, sheet, idx, vals, ignore=None):
         if ignore is None:
