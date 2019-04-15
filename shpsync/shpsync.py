@@ -28,8 +28,8 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 from qgis.core import QgsProject
 
-from shpsync.shp_excel_sync import Settings, Syncer
-from shpsync.project_handler import ProjectHandler
+from shpsync.core.shp_excel_sync import Settings, Syncer
+from shpsync.core.project_handler import ProjectHandler
 
 from shpsync.gui.resources import *
 from shpsync.gui.shpsync_dialog import shpsyncDialog

@@ -36,7 +36,7 @@ from xlrd import (
     XLRDError
 )
 
-from shpsync import qgis_utils
+from shpsync.core import qgis_utils
 
 FORM_CLASS = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'shpsync_dialog_base.ui'))[0]
