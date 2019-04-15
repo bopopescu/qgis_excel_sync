@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from qgis.core import QgsProject
-from qgis.PyQt.QtCore import QObject, QVariant
+from qgis.PyQt.QtCore import QObject
 
 
 class ProjectHandler(QObject):
@@ -62,6 +62,6 @@ class ProjectHandler(QObject):
                     else:
                         raise Exception
                 settings[setting_name] = setting_value
-            except:
+            except Exception:
                 pass
         return settings
