@@ -23,31 +23,26 @@
 
 import os
 
-from PyQt4 import QtGui, uic
-from PyQt4.QtCore import Qt, QSize
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt, QSize
+from qgis.PyQt.QtWidgets import (
+    QDialog, QHBoxLayout, QComboBox, QPushButton, QSizePolicy)
+
 from qgis.gui import QgsFieldExpressionWidget
-from qgis.core import (
-        QgsMessageLog,
-        QgsMapLayerRegistry,
-        QgsFeatureRequest,
-        QgsFeature,
-        QgsVectorJoinInfo,
-        QgsExpression,
-        QgsMapLayer
-)
+from qgis.core import QgsProject, QgsMapLayer
 
 from xlrd import (
     open_workbook,
     XLRDError
 )
 
-import qgis_utils
+from shpsync.core import qgis_utils
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'shpsync_dialog_base.ui'))
+FORM_CLASS = uic.loadUiType(os.path.join(
+    os.path.dirname(__file__), 'shpsync_dialog_base.ui'))[0]
 
 
-class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
+class shpsyncDialog(QDialog, FORM_CLASS):
 
     def __init__(self, parent=None):
         """Constructor."""
@@ -83,24 +78,27 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         self.comboBox_slave_key.setEnabled(False)
         self.lineEdit_sheetName.setText(settings.excelSheetName)
         self.spinBox.setValue(settings.skipLines)
-        self.comboBox_slave_key.setCurrentIndex(self.comboBox_slave_key.findText(settings.excelKeyName))
-        self.comboBox_master_key.setCurrentIndex(self.comboBox_master_key.findText(settings.shpKeyName))
-        self.checkBox.setCheckState(Qt.Checked if settings.hideDialog else Qt.Unchecked)
+        self.comboBox_slave_key.setCurrentIndex(
+            self.comboBox_slave_key.findText(settings.excelKeyName))
+        self.comboBox_master_key.setCurrentIndex(
+            self.comboBox_master_key.findText(settings.shpKeyName))
+        self.checkBox.setCheckState(
+            Qt.Checked if settings.hideDialog else Qt.Unchecked)
 
-        for k, v in settings.expressions.iteritems():
+        for k, v in settings.expressions.items():
             self.addExpressionWidget()
             self.exps[-1].setLayer(self.master)
             self.exps[-1].setField(v)
             self.combos[-1].setCurrentIndex(self.combos[-1].findText(k))
 
     def addExpressionWidget(self):
-        hor = QtGui.QHBoxLayout()
+        hor = QHBoxLayout()
         fieldExp = QgsFieldExpressionWidget()
-        combo = QtGui.QComboBox()
+        combo = QComboBox()
         hor.addWidget(combo)
         self.combos.append(combo)
         hor.addWidget(fieldExp)
-        del_btn = QtGui.QPushButton(self.tr("Delete"))
+        del_btn = QPushButton(self.tr("Delete"))
         hor.addWidget(del_btn)
         self.dels.append(del_btn)
         self.verticalLayout.addLayout(hor)
@@ -126,7 +124,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
     def removeExpressionWidget(self):
         sender = self.sender()
         idx = self.dels.index(sender)
-        hor = self.hors[idx]
+        # hor = self.hors[idx]
         # self.verticalLayout.removeItem(hor.itemAt(0))
         self.dels[idx].setVisible(False)
         del self.dels[idx]
@@ -137,7 +135,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         del self.hors[idx]
 
     def populate(self, comboBox, isMaster, idx=0, update=True):
-        idlayers = list(QgsMapLayerRegistry.instance().mapLayers().iteritems())
+        idlayers = list(QgsProject.instance().mapLayers().items())
         self.populateFromLayers(comboBox, idlayers, isMaster)
         comboBox.setCurrentIndex(idx)
         if not idlayers:
@@ -153,7 +151,7 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         comboBox.clear()
         for (id, layer) in idlayers:
             if layer.type() == QgsMapLayer.VectorLayer:
-                unicode_name = unicode(layer.name())
+                unicode_name = layer.name()
                 comboBox.addItem(unicode_name, id)
 
         if isMaster:
@@ -166,7 +164,8 @@ class shpsyncDialog(QtGui.QDialog, FORM_CLASS):
         for attr in attrs:
             comboBox.addItem(attr.name())
         comboBox.setMinimumSize(QSize(150, 0))
-        comboBox.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        comboBox.setSizePolicy(
+            QSizePolicy.Preferred, QSizePolicy.Preferred)
 
     def masterUpdated(self, idx):
         layer = qgis_utils.getLayerFromId(self.comboBox_master.itemData(idx))

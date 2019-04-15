@@ -25,10 +25,11 @@
 import os
 import sys
 
-pluginpath = os.path.dirname(__file__)
-for file in os.listdir(pluginpath):
-    if file.endswith('.egg'):
-        sys.path.append(os.path.join(pluginpath, file))
+plugin_libs_path = os.path.join(os.path.dirname(__file__), 'libs')
+for file in os.listdir(plugin_libs_path):
+    if file.endswith('.whl'):
+        sys.path.append(os.path.join(plugin_libs_path, file))
+
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name

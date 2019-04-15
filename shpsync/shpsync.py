@@ -22,15 +22,17 @@
 """
 import os.path
 from collections import OrderedDict
+from qgis.PyQt.QtCore import (
+    QSettings, QTranslator, qVersion, QCoreApplication)
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction
+from qgis.core import QgsProject
 
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QObject, SIGNAL
-from PyQt4.QtGui import QAction, QIcon
-from qgis._core import QgsProject
+from shpsync.core.shp_excel_sync import Settings, Syncer
+from shpsync.core.project_handler import ProjectHandler
 
-import resources
-from shpsync_dialog import shpsyncDialog
-from shp_excel_sync import Settings, Syncer
-from project_handler import ProjectHandler
+from shpsync.gui.resources import *
+from shpsync.gui.shpsync_dialog import shpsyncDialog
 
 
 class shpsync:
@@ -38,7 +40,8 @@ class shpsync:
 
     def setUpSyncerTest(self, excelName, excelKeyName, shpName, shpKeyName):
         """Test the setup"""
-        exps = {"Flaeche_ha": "area( $geometry )/10000", "FEE_Nr": "y( $geometry )"}
+        exps = {"Flaeche_ha": "area( $geometry )/10000",
+                "FEE_Nr": "y( $geometry )"}
         s = Settings(excelName, "Tabelle1", excelKeyName,
                      1, shpName, shpKeyName, exps)
         self.syncer = Syncer(s)
@@ -84,15 +87,15 @@ class shpsync:
         """ initialize project related connections """
         self.iface.projectRead.connect(self.readSettings)
         self.iface.newProjectCreated.connect(self.reset)
-        QObject.connect(QgsProject.instance(), SIGNAL("writeProject(QDomDocument &)"),
-                        self.writeSettings)
+        QgsProject.instance().writeProject.connect(self.writeSettings)
 
     def reset(self):
         del self.syncer
         self.syncer = None
 
     def readSettings(self):
-        # "Settings","excelName excelSheetName excelKeyName skipLines shpName shpKeyName expressions")
+        # "Settings","excelName excelSheetName excelKeyName skipLines shpName
+        # shpKeyName expressions")
         self.reset()
         metasettings = OrderedDict()
         metasettings["excelName"] = (str, None)
@@ -104,7 +107,8 @@ class shpsync:
         metasettings["expressions"] = (list, [])
         metasettings["hideDialog"] = (bool, False)
         settings_dict = ProjectHandler.readSettings("SHPSYNC", metasettings)
-        if "excelName" not in settings_dict or settings_dict["excelName"]=='':
+        if "excelName" not in settings_dict or \
+           settings_dict["excelName"] == '':
             return
         else:
             exps = settings_dict["expressions"]
@@ -112,8 +116,12 @@ class shpsync:
             for exp in exps:
                 kv = exp.split(":::")
                 exps_dict[kv[0]] = kv[1]
-            settings = Settings(settings_dict["excelName"], settings_dict["excelSheetName"], settings_dict["excelKeyName"],
-                                settings_dict["skipLines"], settings_dict["shpName"], settings_dict["shpKeyName"],
+            settings = Settings(settings_dict["excelName"],
+                                settings_dict["excelSheetName"],
+                                settings_dict["excelKeyName"],
+                                settings_dict["skipLines"],
+                                settings_dict["shpName"],
+                                settings_dict["shpKeyName"],
                                 exps_dict, settings_dict['hideDialog'])
             self.initSyncer(settings)
 
@@ -122,7 +130,7 @@ class shpsync:
             return
         settings = self.syncer.s._asdict()
         settings["expressions"] = ["{}:::{}".format(k, v) for k, v in settings[
-            "expressions"].iteritems()]
+            "expressions"].items()]
         ProjectHandler.writeSettings("SHPSYNC", settings)
 
     # noinspection PyMethodMayBeStatic
