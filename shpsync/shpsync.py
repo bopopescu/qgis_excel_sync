@@ -26,7 +26,7 @@ from qgis.PyQt.QtCore import (
     QSettings, QTranslator, qVersion, QCoreApplication)
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
-from qgis._core import QgsProject
+from qgis.core import QgsProject
 
 from shpsync.shp_excel_sync import Settings, Syncer
 from shpsync.project_handler import ProjectHandler
@@ -107,7 +107,8 @@ class shpsync:
         metasettings["expressions"] = (list, [])
         metasettings["hideDialog"] = (bool, False)
         settings_dict = ProjectHandler.readSettings("SHPSYNC", metasettings)
-        if "excelName" not in settings_dict or settings_dict["excelName"] == '':
+        if "excelName" not in settings_dict or \
+           settings_dict["excelName"] == '':
             return
         else:
             exps = settings_dict["expressions"]

@@ -1,11 +1,6 @@
-from qgis.core import QgsRasterLayer, Qgis
-from qgis._core import QgsProject
+from qgis.core import QgsRasterLayer, Qgis, QgsProject
 
 from logging import warn
-
-
-__author__ = 'carolinux'
-
 """File that has most helper functions that interface with the QGIS API"""
 
 
@@ -42,7 +37,7 @@ def getLayerAttributes(layerId):
         layer = QgsProject.instance().mapLayers()[layerId]
         fieldmap = layer.pendingFields()
         return fieldmap
-    except:
+    except KeyError:
         # OpenLayers, Raster layers don't work with this
         warn("Could not get attributes of layer {}".format(layerId))
         return None
@@ -60,7 +55,7 @@ def getLayerFromId(layerId):
     try:
         layer = QgsProject.instance().mapLayers()[layerId]
         return layer
-    except:
+    except KeyError:
         warn("Could not get layer for id {}".format(layerId))
         return None
 

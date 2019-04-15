@@ -2,7 +2,7 @@ import os
 
 from collections import namedtuple
 
-from qgis._core import (
+from qgis.core import (
     QgsMessageLog, QgsProject, QgsFeatureRequest, QgsEditFormConfig,
     QgsVectorLayerJoinInfo, QgsExpression, Qgis)
 from qgis.utils import iface
@@ -156,7 +156,6 @@ class Syncer(QObject):
         shpLayer.addJoin(jinfo)
 
     def reload_excel(self):
-        path = self.excelPath
         layer = layer_from_name(self.excelName)
         fsize = os.stat(self.excelPath).st_size
         info("fsize " + str(fsize))
@@ -177,7 +176,7 @@ class Syncer(QObject):
         if layer.dataProvider().featureCount() == 0:
             return 0
         maxVal = layer.maximumValue(self.shpKeyIdx)
-        if maxVal == None:
+        if maxVal is None:
             return 0
         else:
             return maxVal
@@ -187,7 +186,7 @@ class Syncer(QObject):
         layer.startEditing()
         feats = query_layer_for_fids(self.shpName, fidToId.keys())
         for f in feats:
-            res = layer.changeAttributeValue(
+            layer.changeAttributeValue(
                 f.id(), self.shpKeyIdx, fidToId[f.id()])
         layer.commitChanges()
 
@@ -316,8 +315,11 @@ class Syncer(QObject):
         if not fksToRemove:
             return
 
-        prompt_msg = "Attempt to synchronize between Excel and Shapefile. Shapefile has features with ids: ({}) that don't appear in the Excel. Delete those features from the shapefile? ".format(
-            ','.join([str(fk) for fk in fksToRemove]))
+        prompt_msg = ("Attempt to synchronize between Excel and Shapefile. "
+                      "Shapefile has features with ids: ({}) that don't "
+                      "appear in the Excel. Delete those features from the "
+                      "shapefile? ").format(
+                          ','.join([str(fk) for fk in fksToRemove]))
         reply = QMessageBox.question(
             iface.mainWindow(), 'Message',
             prompt_msg, QMessageBox.Yes, QMessageBox.No)
@@ -346,8 +348,9 @@ class Syncer(QObject):
         inShpButNotInExcel = shpFks - excelFks
         inExcelButNotInShp = excelFks - shpFks
         if inExcelButNotInShp:
-            warn("There are rows in the excel file with no matching geometry {}.".format(
-                inExcelButNotInShp))
+            warn(("There are rows in the excel file with no matching "
+                  "geometry {}.").format(
+                      inExcelButNotInShp))
             # FIXME: if those are added later then they will be added twice..
             # However, having an autoincrement id suggests features would be
             # added first from shp only?
