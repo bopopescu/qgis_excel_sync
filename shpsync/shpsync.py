@@ -23,16 +23,16 @@
 import os.path
 from collections import OrderedDict
 from qgis.PyQt.QtCore import (
-    QSettings, QTranslator, qVersion, QCoreApplication, QObject)
+    QSettings, QTranslator, qVersion, QCoreApplication)
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 from qgis._core import QgsProject
 
-from shpsync.resources import *
-
-from shpsync.shpsync_dialog import shpsyncDialog
 from shpsync.shp_excel_sync import Settings, Syncer
 from shpsync.project_handler import ProjectHandler
+
+from shpsync.gui.resources import *
+from shpsync.gui.shpsync_dialog import shpsyncDialog
 
 
 class shpsync:
