@@ -51,7 +51,7 @@ def field_name_from_idx(layerName, idx):
 
 
 # configurable
-logTag = "OpenGIS"  # in which tab log messages appear
+logTag = "shpsync"  # in which tab log messages appear
 Settings = namedtuple(
     "Settings",
     "excelName excelSheetName excelKeyName skipLines shpName shpKeyName \
