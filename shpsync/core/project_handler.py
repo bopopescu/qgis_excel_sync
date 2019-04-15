@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from qgis.core import QgsProject
-from qgis.PyQt.QtCore import QObject
+from qgis.PyQt.QtCore import QObject, QVariant
 
 
 class ProjectHandler(QObject):
@@ -19,7 +19,11 @@ class ProjectHandler(QObject):
     @classmethod
     def writeSetting(cls, tag, attribute, value):
         """write plugin settings to QgsProject instance"""
-        QgsProject.instance().writeEntry(tag, attribute, value)
+
+        if(type(value) == float):
+            QgsProject.instance().writeEntryDouble(tag, attribute, value)
+        else:
+            QgsProject.instance().writeEntry(tag, attribute, value)
 
     @classmethod
     def readSetting(cls, tag, attribute, func):
