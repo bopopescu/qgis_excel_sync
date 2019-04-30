@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>shpsyncDialogBase</class>
- <widget class="QDialog" name="shpsyncDialogBase">
+ <class>qgis_excel_syncDialogBase</class>
+ <widget class="QDialog" name="qgis_excel_syncDialogBase">
   <property name="geometry">
    <rect>
     <x>0</x>

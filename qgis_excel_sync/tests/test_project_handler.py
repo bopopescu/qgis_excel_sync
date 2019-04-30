@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from qgis.testing import unittest, start_app
-from shpsync.core.project_handler import ProjectHandler
+from qgis_excel_sync.core.project_handler import ProjectHandler
 
 start_app()
 

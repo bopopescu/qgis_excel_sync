@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- shpsync
+ qgis_excel_sync
                                  A QGIS plugin
  description
                               -------------------
@@ -28,14 +28,14 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 from qgis.core import QgsProject
 
-from shpsync.core.shp_excel_sync import Settings, Syncer
-from shpsync.core.project_handler import ProjectHandler
+from qgis_excel_sync.core.shp_excel_sync import Settings, Syncer
+from qgis_excel_sync.core.project_handler import ProjectHandler
 
-from shpsync.gui.resources import *
-from shpsync.gui.shpsync_dialog import shpsyncDialog
+from qgis_excel_sync.gui.resources import *
+from qgis_excel_sync.gui.qgis_excel_sync_dialog import qgis_excel_syncDialog
 
 
-class shpsync:
+class qgis_excel_sync:
     """QGIS Plugin Implementation."""
 
     def setUpSyncerTest(self, excelName, excelKeyName, shpName, shpKeyName):
@@ -79,8 +79,8 @@ class shpsync:
         self.actions = []
         self.menu = self.tr(u'&ShpSync')
         # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'shpsync')
-        self.toolbar.setObjectName(u'shpsync')
+        self.toolbar = self.iface.addToolBar(u'qgis_excel_sync')
+        self.toolbar.setObjectName(u'qgis_excel_sync')
         self.initProject()
 
     def initProject(self):
@@ -146,7 +146,7 @@ class shpsync:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('shpsync', message)
+        return QCoreApplication.translate('qgis_excel_sync', message)
 
     def add_action(
             self,
@@ -186,7 +186,7 @@ class shpsync:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/shpsync/icon.png'
+        icon_path = ':/plugins/qgis_excel_sync/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Set up ShpSync'),
@@ -208,7 +208,7 @@ class shpsync:
         # show the dialog
         if self.dlg is not None:
             del self.dlg
-        self.dlg = shpsyncDialog()
+        self.dlg = qgis_excel_syncDialog()
         self.dlg.buttonBox.accepted.connect(self.parseSettings)
         self.dlg.buttonBox.rejected.connect(self.hideDialog)
         if self.syncer is None:

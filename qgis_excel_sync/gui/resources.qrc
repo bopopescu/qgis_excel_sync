@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/shpsync" >
+    <qresource prefix="/plugins/qgis_excel_sync" >
         <file>icon.png</file>
     </qresource>
 </RCC>
