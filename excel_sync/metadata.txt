@@ -16,8 +16,8 @@ email=info@opengis.ch
 
 about=Links an Excel (.xls) file to a Shapefile (or any other layer). For every row on the layer a row in the Excel file is created. Derived information like area or centroid can be added to the Excel row.
 
-tracker=https://github.com/opengisch/qgis_excel_sync/issues
-repository=https://github.com/opengisch/qgis_excel_sync
+tracker=https://github.com/opengisch/excel_sync/issues
+repository=https://github.com/opengisch/excel_sync
 # End of mandatory metadata
 
 # Recommended items:
@@ -28,7 +28,7 @@ repository=https://github.com/opengisch/qgis_excel_sync
 # Tags are comma separated with spaces allowed
 tags=excel,shape,attribute assistant
 
-homepage=https://github.com/opengisch/qgis_excel_sync
+homepage=https://github.com/opengisch/excel_sync
 category=Vector
 icon=icon.png
 # experimental flag

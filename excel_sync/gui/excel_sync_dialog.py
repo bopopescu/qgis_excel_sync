@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- qgis_excel_syncDialog
+ excel_syncDialog
                                  A QGIS plugin
  description
                              -------------------
@@ -36,17 +36,17 @@ from xlrd import (
     XLRDError
 )
 
-from qgis_excel_sync.core import qgis_utils
+from excel_sync.core import qgis_utils
 
 FORM_CLASS = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'qgis_excel_sync_dialog_base.ui'))[0]
+    os.path.dirname(__file__), 'excel_sync_dialog_base.ui'))[0]
 
 
-class qgis_excel_syncDialog(QDialog, FORM_CLASS):
+class excel_syncDialog(QDialog, FORM_CLASS):
 
     def __init__(self, parent=None):
         """Constructor."""
-        super(qgis_excel_syncDialog, self).__init__(parent)
+        super(excel_syncDialog, self).__init__(parent)
         # Set up the user interface from Designer.
         # After setupUI you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>qgis_excel_syncDialogBase</class>
- <widget class="QDialog" name="qgis_excel_syncDialogBase">
+ <class>excel_syncDialogBase</class>
+ <widget class="QDialog" name="excel_syncDialogBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>ShpSync</string>
+   <string>ExcelSync</string>
   </property>
   <layout class="QFormLayout" name="formLayout_2">
    <property name="fieldGrowthPolicy">

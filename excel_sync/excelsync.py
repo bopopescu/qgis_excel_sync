@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- qgis_excel_sync
+ excel_sync
                                  A QGIS plugin
  description
                               -------------------
@@ -28,14 +28,14 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 from qgis.core import QgsProject
 
-from qgis_excel_sync.core.shp_excel_sync import Settings, Syncer
-from qgis_excel_sync.core.project_handler import ProjectHandler
+from excel_sync.core.shp_excel_sync import Settings, Syncer
+from excel_sync.core.project_handler import ProjectHandler
 
-from qgis_excel_sync.gui.resources import *
-from qgis_excel_sync.gui.qgis_excel_sync_dialog import qgis_excel_syncDialog
+from excel_sync.gui.resources import *
+from excel_sync.gui.excel_sync_dialog import excel_syncDialog
 
 
-class qgis_excel_sync:
+class excel_sync:
     """QGIS Plugin Implementation."""
 
     def setUpSyncerTest(self, excelName, excelKeyName, shpName, shpKeyName):
@@ -77,10 +77,10 @@ class qgis_excel_sync:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&ShpSync')
+        self.menu = self.tr(u'&ExcelSync')
         # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'qgis_excel_sync')
-        self.toolbar.setObjectName(u'qgis_excel_sync')
+        self.toolbar = self.iface.addToolBar(u'excel_sync')
+        self.toolbar.setObjectName(u'excel_sync')
         self.initProject()
 
     def initProject(self):
@@ -146,7 +146,7 @@ class qgis_excel_sync:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('qgis_excel_sync', message)
+        return QCoreApplication.translate('excel_sync', message)
 
     def add_action(
             self,
@@ -186,10 +186,10 @@ class qgis_excel_sync:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/qgis_excel_sync/icon.png'
+        icon_path = ':/plugins/excel_sync/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Set up ShpSync'),
+            text=self.tr(u'Set up ExcelSync'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -197,7 +197,7 @@ class qgis_excel_sync:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&ShpSync'),
+                self.tr(u'&ExcelSync'),
                 action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
@@ -208,7 +208,7 @@ class qgis_excel_sync:
         # show the dialog
         if self.dlg is not None:
             del self.dlg
-        self.dlg = qgis_excel_syncDialog()
+        self.dlg = excel_syncDialog()
         self.dlg.buttonBox.accepted.connect(self.parseSettings)
         self.dlg.buttonBox.rejected.connect(self.hideDialog)
         if self.syncer is None:

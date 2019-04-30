@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- qgis_excel_sync
+ excel_sync
                                  A QGIS plugin
  description
                              -------------------
@@ -33,11 +33,11 @@ for file in os.listdir(plugin_libs_path):
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
-    """Load qgis_excel_sync class from file qgis_excel_sync.
+    """Load excel_sync class from file excel_sync.
 
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
     #
-    from .qgis_excel_sync import qgis_excel_sync
-    return qgis_excel_sync(iface)
+    from .excel_sync import excel_sync
+    return excel_sync(iface)

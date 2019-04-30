@@ -51,7 +51,7 @@ def field_name_from_idx(layerName, idx):
 
 
 # configurable
-logTag = "qgis_excel_sync"  # in which tab log messages appear
+logTag = "excel_sync"  # in which tab log messages appear
 Settings = namedtuple(
     "Settings",
     "excelName excelSheetName excelKeyName skipLines shpName shpKeyName \
