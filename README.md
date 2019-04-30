@@ -1,5 +1,5 @@
-ShpSync
-=======
+QGIS Excel Sync
+===============
 
 This is a QGIS plugin that links an Excel file to a Shapefile (or other layer).
 
