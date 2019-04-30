@@ -9,5 +9,8 @@ git:
 before_install:
   - git submodule update --init --recursive
 
-script:
-  - scripts/ci/deploy.sh
+jobs:
+  include:
+    - stage: deploy
+      if: tag IS present
+      script: plugin_ci/release/release.sh
