@@ -9,7 +9,7 @@
 [general]
 name=ExcelSync
 qgisMinimumVersion=3.0
-description=description
+description=Links an Excel (.xlsx) file to a Shapefile (or any other layer). For every row on the layer a row in the Excel file is created. Derived information like area or centroid can be added to the Excel row and will be kept in sync when the layer is changed. Derived attributes can be calculated with any kind of QGIS expression.<div>Icons made by <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a> and <a href="https://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>, licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
 version=3.0
 author=OPENGIS.ch, carolinux
 email=info@opengis.ch
@@ -30,7 +30,7 @@ tags=excel,shape,attribute assistant
 
 homepage=https://github.com/opengisch/qgis_excel_sync
 category=Vector
-icon=icon.png
+icon=gui/ExcelSync.svg
 # experimental flag
 experimental=False
 
