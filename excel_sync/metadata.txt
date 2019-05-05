@@ -10,7 +10,7 @@
 name=ExcelSync
 qgisMinimumVersion=3.0
 description=description
-version=3.0
+version=dev
 author=OPENGIS.ch, carolinux
 email=info@opengis.ch
 
