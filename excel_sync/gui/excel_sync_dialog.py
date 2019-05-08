@@ -193,7 +193,7 @@ class excel_syncDialog(QDialog, FORM_CLASS):
         try:
             wb = open_workbook(layer.publicSource())
             self.lineEdit_sheetName.setText(wb.sheet_names()[0])
-        except XLRDError:
+        except XLRDError, OSError:
             pass
         # update fields in comboboxes
         for combo in self.combos:
