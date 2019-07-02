@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/excel_sync" >
-        <file>icon.png</file>
-    </qresource>
-</RCC>
