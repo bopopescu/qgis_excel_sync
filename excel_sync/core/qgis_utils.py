@@ -1,7 +1,5 @@
 from qgis.core import QgsRasterLayer, Qgis, QgsProject
 
-from logging import warn
-"""File that has most helper functions that interface with the QGIS API"""
 
 
 def getAllJoinIdsOfLayer(layer):
@@ -30,17 +28,6 @@ def getAllJoinedLayers(layerIds):
                 allJoined.add(id)
 
     return allJoined
-
-
-def getLayerAttributes(layerId):
-    try:
-        layer = QgsProject.instance().mapLayers()[layerId]
-        fieldmap = layer.pendingFields()
-        return fieldmap
-    except KeyError:
-        # OpenLayers, Raster layers don't work with this
-        warn("Could not get attributes of layer {}".format(layerId))
-        return None
 
 
 def getAllLayerIds(filter_func):
