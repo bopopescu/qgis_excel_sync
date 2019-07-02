@@ -39,5 +39,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .excel_sync import excel_sync
-    return excel_sync(iface)
+    from .excel_sync import ExcelSync
+    return ExcelSync(iface)

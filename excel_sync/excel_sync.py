@@ -34,7 +34,7 @@ from excel_sync.core.project_handler import ProjectHandler
 from excel_sync.gui.excel_sync_dialog import excel_syncDialog
 
 
-class excel_sync:
+class ExcelSync:
     """QGIS Plugin Implementation."""
 
     def setUpSyncerTest(self, excelName, excelKeyName, shpName, shpKeyName):
