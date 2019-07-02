@@ -34,8 +34,6 @@ from xlrd import (
     XLRDError
 )
 
-from ..core import qgis_utils
-
 FORM_CLASS = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'excel_sync_dialog_base.ui'))[0]
 
@@ -166,7 +164,7 @@ class excel_syncDialog(QDialog, FORM_CLASS):
             QSizePolicy.Preferred, QSizePolicy.Preferred)
 
     def masterUpdated(self, idx):
-        layer = qgis_utils.getLayerFromId(self.comboBox_master.itemData(idx))
+        layer = QgsProject.instance().mapLayer(self.comboBox_master.itemData(idx))
         if layer is None:
             return
         self.master = layer
@@ -180,7 +178,7 @@ class excel_syncDialog(QDialog, FORM_CLASS):
             exp.setField(text)
 
     def slaveUpdated(self, idx):
-        layer = qgis_utils.getLayerFromId(self.comboBox_slave.itemData(idx))
+        layer = QgsProject.instance().mapLayer(self.comboBox_slave.itemData(idx))
         if layer is None:
             return
         self.slave = layer

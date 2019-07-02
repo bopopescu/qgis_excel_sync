@@ -51,15 +51,6 @@ def getAllLayerIds(filter_func):
     return res
 
 
-def getLayerFromId(layerId):
-    try:
-        layer = QgsProject.instance().mapLayers()[layerId]
-        return layer
-    except KeyError:
-        warn("Could not get layer for id {}".format(layerId))
-        return None
-
-
 def isRaster(layer):
     return type(layer) == QgsRasterLayer
 
