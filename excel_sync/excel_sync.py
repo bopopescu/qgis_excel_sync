@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-import os.path
+import os
 from collections import OrderedDict
 from qgis.PyQt.QtCore import (
     QSettings, QTranslator, qVersion, QCoreApplication)
@@ -186,7 +186,9 @@ class excel_sync:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/excel_sync/icon.png'
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        icon_path = os.path.join(dir_path, 'gui/icon.png')
         self.add_action(
             icon_path,
             text=self.tr(u'Set up ExcelSync'),
