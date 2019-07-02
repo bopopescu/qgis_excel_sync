@@ -23,7 +23,9 @@
 import os
 from collections import OrderedDict
 from qgis.PyQt.QtCore import (
-    QSettings, QTranslator, qVersion, QCoreApplication)
+    QSettings,
+    QTranslator,
+    QCoreApplication)
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 from qgis.core import QgsProject
@@ -69,8 +71,7 @@ class ExcelSync:
             self.translator = QTranslator()
             self.translator.load(locale_path)
 
-            if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
+            QCoreApplication.installTranslator(self.translator)
 
         self.dlg = None
 
