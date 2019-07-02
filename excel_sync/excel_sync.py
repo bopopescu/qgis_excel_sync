@@ -28,10 +28,10 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 from qgis.core import QgsProject
 
-from excel_sync.core.shp_excel_sync import Settings, Syncer
-from excel_sync.core.project_handler import ProjectHandler
+from .core.shp_excel_sync import Settings, Syncer
+from .core.project_handler import ProjectHandler
 
-from excel_sync.gui.excel_sync_dialog import excel_syncDialog
+from .gui.excel_sync_dialog import excel_syncDialog
 
 
 class ExcelSync:

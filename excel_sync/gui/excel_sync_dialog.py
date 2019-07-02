@@ -36,7 +36,7 @@ from xlrd import (
     XLRDError
 )
 
-from excel_sync.core import qgis_utils
+from ..core import qgis_utils
 
 FORM_CLASS = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'excel_sync_dialog_base.ui'))[0]
