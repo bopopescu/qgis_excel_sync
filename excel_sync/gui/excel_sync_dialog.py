@@ -191,7 +191,7 @@ class excel_syncDialog(QDialog, FORM_CLASS):
             self.comboBox_slave_key, attributes)
         # update sheet name suggestion
         try:
-            wb = open_workbook(layer.publicSource())
+            wb = open_workbook(layer.publicSource().split('|')[0])
             self.lineEdit_sheetName.setText(wb.sheet_names()[0])
         except (XLRDError, OSError):
             pass

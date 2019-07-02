@@ -118,7 +118,7 @@ class Syncer(QObject):
         self.excelKeyName = settings.excelKeyName
         self.excelFkIdx = field_idx_from_name(
             self.excelName, self.excelKeyName)
-        self.excelPath = layer_from_name(self.excelName).publicSource()
+        self.excelPath = layer_from_name(self.excelName).publicSource().split('|')[0]
         self.excelKeyName = field_name_from_idx(
             self.excelName, self.excelFkIdx)
         # shpfile layer
