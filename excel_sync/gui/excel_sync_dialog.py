@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- excel_syncDialog
-                                 A QGIS plugin
- description
+ excel_sync_dialog.py
                              -------------------
-        begin                : 2016-01-24
+        begin                : 2016
         git sha              : $Format:%H$
-        copyright            : (C) 2016 by OpenGis.ch
+        copyright            : (C) 2016 by OPENGIS.ch
         email                : info@opengis.ch
  ***************************************************************************/
 
