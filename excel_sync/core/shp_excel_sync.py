@@ -145,7 +145,7 @@ class Syncer(QObject):
         jinfo = QgsVectorLayerJoinInfo()
         jinfo.setJoinFieldName(self.excelKeyName)
         jinfo.setTargetFieldName(self.shpKeyName)
-        jinfo.setJoinLayerId(layer_from_name(self.excelName).id())
+        jinfo.setJoinLayer(layer_from_name(self.excelName))
         jinfo.setUsingMemoryCache(False)
         jinfo.setPrefix('')
         for jinfo2 in shpLayer.vectorJoins():
