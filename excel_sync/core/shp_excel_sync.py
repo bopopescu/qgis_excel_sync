@@ -96,8 +96,6 @@ def get_fk_set(layerName, fkName, skipFirst=1, fids=None, useProvider=False):
         feats = [f for f in layer.dataProvider().getFeatures(freq)]
     fkSet = []
     for f in feats[skipFirst:]:
-        QgsMessageLog.logMessage(
-            'FK {}'.format(f.attribute(fkName)), logTag, Qgis.Critical)
         fk = f.attribute(fkName)
         if fk:  # Skip NULL ids that may be reported from excel files
             fkSet.append(fk)
@@ -233,10 +231,9 @@ class Syncer(QObject):
         info("feat ids to remove" + str(self.shpRemove))
 
     def changed_geom(self, layerId, geoms):
-        fids = geoms.keys()
+        fids = list(geoms.keys())
         feats = query_layer_for_fids(self.shpName, fids)
-        fks_to_change = get_fk_set(
-            self.shpName, self.shpKeyName, skipFirst=0, fids=fids)
+        fks_to_change = get_fk_set(self.shpName, self.shpKeyName, skipFirst=0, fids=fids)
         self.shpChange = {k: v for (k, v) in zip(fks_to_change, feats)}
         # info("changed"+str(shpChange))
 
