@@ -170,7 +170,7 @@ class Syncer(QObject):
             if jinfo2 == jinfo:
                 info("Join already exists. Will not create it again")
                 return
-        info("Adding join between master and slave layers")
+        info("Adding join between main and subordinate layers")
         shpLayer.addJoin(jinfo)
 
     def reload_excel(self):

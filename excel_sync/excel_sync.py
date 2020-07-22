@@ -225,10 +225,10 @@ class ExcelSync:
 
     def parseSettings(self):
         exps = self.dlg.getExpressionsDict()
-        excelName = self.dlg.comboBox_slave.currentText()
-        excelKeyName = self.dlg.comboBox_slave_key.currentText()
-        shpName = self.dlg.comboBox_master.currentText()
-        shpKeyName = self.dlg.comboBox_master_key.currentText()
+        excelName = self.dlg.comboBox_subordinate.currentText()
+        excelKeyName = self.dlg.comboBox_subordinate_key.currentText()
+        shpName = self.dlg.comboBox_main.currentText()
+        shpKeyName = self.dlg.comboBox_main_key.currentText()
         excelSheetName = self.dlg.lineEdit_sheetName.text()
         skipLines = self.dlg.spinBox.value()
         hideDialog = self.dlg.checkBox.isChecked()

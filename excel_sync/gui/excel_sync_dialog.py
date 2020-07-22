@@ -53,37 +53,37 @@ class excel_syncDialog(QDialog, FORM_CLASS):
         self.dels = []
         self.combos = []
         self.hors = []
-        self.slave = None
-        self.master = None
-        self.populate(self.comboBox_master, isMaster=True)
-        self.populate(self.comboBox_slave, isMaster=False)
+        self.subordinate = None
+        self.main = None
+        self.populate(self.comboBox_main, isMain=True)
+        self.populate(self.comboBox_subordinate, isMain=False)
         self.pushButton.clicked.connect(self.addExpressionWidget)
 
     def restoreSettings(self, settings):
-        master_idx = self.comboBox_master.findText(settings.shpName)
-        slave_idx = self.comboBox_slave.findText(settings.excelName)
+        main_idx = self.comboBox_main.findText(settings.shpName)
+        subordinate_idx = self.comboBox_subordinate.findText(settings.excelName)
 
-        self.populate(self.comboBox_master, isMaster=True, idx=master_idx)
-        self.comboBox_master.setCurrentIndex(master_idx)
-        self.comboBox_master.setEnabled(False)
-        self.comboBox_master_key.setEnabled(False)
-        self.populate(self.comboBox_master, isMaster=True, idx=master_idx)
-        self.populate(self.comboBox_slave, isMaster=False, idx=slave_idx)
-        self.comboBox_slave.setCurrentIndex(slave_idx)
-        self.comboBox_slave.setEnabled(False)
-        self.comboBox_slave_key.setEnabled(False)
+        self.populate(self.comboBox_main, isMain=True, idx=main_idx)
+        self.comboBox_main.setCurrentIndex(main_idx)
+        self.comboBox_main.setEnabled(False)
+        self.comboBox_main_key.setEnabled(False)
+        self.populate(self.comboBox_main, isMain=True, idx=main_idx)
+        self.populate(self.comboBox_subordinate, isMain=False, idx=subordinate_idx)
+        self.comboBox_subordinate.setCurrentIndex(subordinate_idx)
+        self.comboBox_subordinate.setEnabled(False)
+        self.comboBox_subordinate_key.setEnabled(False)
         self.lineEdit_sheetName.setText(settings.excelSheetName)
         self.spinBox.setValue(settings.skipLines)
-        self.comboBox_slave_key.setCurrentIndex(
-            self.comboBox_slave_key.findText(settings.excelKeyName))
-        self.comboBox_master_key.setCurrentIndex(
-            self.comboBox_master_key.findText(settings.shpKeyName))
+        self.comboBox_subordinate_key.setCurrentIndex(
+            self.comboBox_subordinate_key.findText(settings.excelKeyName))
+        self.comboBox_main_key.setCurrentIndex(
+            self.comboBox_main_key.findText(settings.shpKeyName))
         self.checkBox.setCheckState(
             Qt.Checked if settings.hideDialog else Qt.Unchecked)
 
         for k, v in settings.expressions.items():
             self.addExpressionWidget()
-            self.exps[-1].setLayer(self.master)
+            self.exps[-1].setLayer(self.main)
             self.exps[-1].setField(v)
             self.combos[-1].setCurrentIndex(self.combos[-1].findText(k))
 
@@ -100,10 +100,10 @@ class excel_syncDialog(QDialog, FORM_CLASS):
         self.verticalLayout.addLayout(hor)
         self.exps.append(fieldExp)
         self.hors.append(hor)
-        if self.slave is not None:
-            self.updateComboBoxFromLayerAttributes(combo, self.slave.fields())
-        if self.master is not None:
-            fieldExp.setLayer(self.master)
+        if self.subordinate is not None:
+            self.updateComboBoxFromLayerAttributes(combo, self.subordinate.fields())
+        if self.main is not None:
+            fieldExp.setLayer(self.main)
 
         del_btn.clicked.connect(self.removeExpressionWidget)
 
@@ -130,30 +130,30 @@ class excel_syncDialog(QDialog, FORM_CLASS):
         del self.exps[idx]
         del self.hors[idx]
 
-    def populate(self, comboBox, isMaster, idx=0, update=True):
+    def populate(self, comboBox, isMain, idx=0, update=True):
         idlayers = list(QgsProject.instance().mapLayers().items())
-        self.populateFromLayers(comboBox, idlayers, isMaster)
+        self.populateFromLayers(comboBox, idlayers, isMain)
         comboBox.setCurrentIndex(idx)
         if not idlayers:
             return
         if not update:
             return
-        if isMaster:
-            self.masterUpdated(idx)
+        if isMain:
+            self.mainUpdated(idx)
         else:
-            self.slaveUpdated(idx)
+            self.subordinateUpdated(idx)
 
-    def populateFromLayers(self, comboBox, idlayers, isMaster):
+    def populateFromLayers(self, comboBox, idlayers, isMain):
         comboBox.clear()
         for (id, layer) in idlayers:
             if layer.type() == QgsMapLayer.VectorLayer:
                 unicode_name = layer.name()
                 comboBox.addItem(unicode_name, id)
 
-        if isMaster:
-            comboBox.currentIndexChanged.connect(self.masterUpdated)
+        if isMain:
+            comboBox.currentIndexChanged.connect(self.mainUpdated)
         else:
-            comboBox.currentIndexChanged.connect(self.slaveUpdated)
+            comboBox.currentIndexChanged.connect(self.subordinateUpdated)
 
     def updateComboBoxFromLayerAttributes(self, comboBox, attrs):
         comboBox.clear()
@@ -163,28 +163,28 @@ class excel_syncDialog(QDialog, FORM_CLASS):
         comboBox.setSizePolicy(
             QSizePolicy.Preferred, QSizePolicy.Preferred)
 
-    def masterUpdated(self, idx):
-        layer = QgsProject.instance().mapLayer(self.comboBox_master.itemData(idx))
+    def mainUpdated(self, idx):
+        layer = QgsProject.instance().mapLayer(self.comboBox_main.itemData(idx))
         if layer is None:
             return
-        self.master = layer
+        self.main = layer
         attributes = layer.fields()
         self.updateComboBoxFromLayerAttributes(
-            self.comboBox_master_key, attributes)
+            self.comboBox_main_key, attributes)
         # update layer in expressions
         for exp in self.exps:
             text = exp.currentText()
             exp.setLayer(layer)
             exp.setField(text)
 
-    def slaveUpdated(self, idx):
-        layer = QgsProject.instance().mapLayer(self.comboBox_slave.itemData(idx))
+    def subordinateUpdated(self, idx):
+        layer = QgsProject.instance().mapLayer(self.comboBox_subordinate.itemData(idx))
         if layer is None:
             return
-        self.slave = layer
+        self.subordinate = layer
         attributes = layer.fields()
         self.updateComboBoxFromLayerAttributes(
-            self.comboBox_slave_key, attributes)
+            self.comboBox_subordinate_key, attributes)
         # update sheet name suggestion
         try:
             wb = open_workbook(layer.publicSource().split('|')[0])
